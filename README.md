@@ -3,10 +3,11 @@
 ## Deployed links and status
 
 - Hub: https://ohmyfeed.stream (separate experiment hub, not deployed by this branch)
-- Discover: https://discover.ohmyfeed.stream (target custom domain for this branch)
+- Discover: https://discover.ohmyfeed.stream (live manual M0 deployment)
+- Cloudflare fallback: https://oh-my-feed-discover.runartica.workers.dev
 - Focus comparison: https://focus.ohmyfeed.stream (separate branch)
 
-This branch implements M0 only: a public Discover Hello World page and a Worker `/healthz` endpoint. No deployment has been claimed or performed from this repository checkout. The deployment SHA is exposed only after Cloudflare Workers Builds runs `npm run build`.
+This branch implements M0 only. The public Discover Hello World page is live from a manual Cloudflare static-assets deployment. GitHub quality CI is live for `spike/ai-tools-network`; automatic Cloudflare deployment is intentionally pending repository-owner approval for the Cloudflare GitHub App. The source-connected Worker and its `/healthz` deployment metadata contract are implemented and tested, but that endpoint is not claimed as part of the current manual static deployment.
 
 ## Problem and current experiment
 
@@ -45,21 +46,20 @@ npm start
 5. Add `discover.ohmyfeed.stream` as the Worker Custom Domain. `wrangler.jsonc` declares that hostname for the `oh-my-feed-discover` Worker.
 6. Let Workers Builds inject `WORKERS_CI_COMMIT_SHA` and `WORKERS_CI_BRANCH` only during the build. They are compiled into the public health metadata module, never read as runtime secrets.
 
-GitHub Actions is quality-only. `.github/workflows/ci.yml` runs pinned actions, Node 22, `npm ci`, `npm test`, `npm run check`, `npm run build`, and `git diff --check`; it has no Cloudflare credentials or deploy step. Cloudflare Workers Builds owns preview and production deployment.
+GitHub Actions is quality-only. `.github/workflows/ci.yml` runs pinned actions, Node 22, `npm ci`, `npm test`, `npm run check`, `npm run build`, and a commit-range whitespace check; it has no Cloudflare credentials or deploy step. Once the repository owner grants the Cloudflare GitHub App access to this single repository, Cloudflare Workers Builds will own preview and production deployment.
 
 ## Smoke and read-back
 
-After Workers Builds deploys, verify the actual public deployment rather than only the build result:
+Verify the current manual M0 deployment rather than only the upload result:
 
 ```bash
-curl --fail --silent --show-error https://discover.ohmyfeed.stream/healthz
 curl --fail --silent --show-error https://discover.ohmyfeed.stream/ | grep -F '<title>Oh My Feed Discover</title>'
 curl --fail --silent --show-error https://discover.ohmyfeed.stream/styles.css > /dev/null
 curl --fail --silent --show-error https://discover.ohmyfeed.stream/app.js > /dev/null
 ```
 
-Confirm `/healthz` returns HTTP 200 and exactly public `variant`, `branch`, `commitSha`, and `buildTimestamp` fields. Compare `variant` to `variant_b_discover`, `branch` to the Workers Builds branch, and `commitSha` to the deployment source SHA. Do not treat this README as evidence that the custom domain is live.
+After Workers Builds is connected, confirm `/healthz` returns HTTP 200 and exactly public `variant`, `branch`, `commitSha`, and `buildTimestamp` fields. Compare `variant` to `variant_b_discover`, `branch` to the Workers Builds branch, and `commitSha` to the pushed source SHA.
 
 ## Rollback
 
-In Cloudflare Dashboard, open `oh-my-feed-discover` → Deployments, select the last known-good Worker version, and roll it back. Then repeat the smoke/read-back commands above and confirm the returned `commitSha` is the expected prior source SHA. Do not use a GitHub Actions deploy workflow to roll back: Workers Builds is the deployment owner for this branch.
+In Cloudflare Dashboard, open `oh-my-feed-discover` → Deployments, select the last known-good version, and roll it back. Repeat the smoke/read-back commands above. After Workers Builds is connected, also confirm the returned `commitSha` is the expected prior source SHA. Do not add an independent GitHub Actions deploy workflow: Cloudflare Workers Builds will remain the single deployment owner for this branch.
