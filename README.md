@@ -2,7 +2,7 @@
 
 ## Deployed links and status
 
-- Hub: https://ohmyfeed.stream (separate experiment hub, not deployed by this branch)
+- Root: https://ohmyfeed.stream (temporarily serves Discover M0 until the neutral experiment hub is deployed)
 - Discover: https://discover.ohmyfeed.stream (live manual M0 deployment)
 - Cloudflare fallback: https://oh-my-feed-discover.runartica.workers.dev
 - Focus comparison: https://focus.ohmyfeed.stream (separate branch)
@@ -43,7 +43,7 @@ npm start
 2. Connect this repository and set the production branch to `spike/ai-tools-network`.
 3. Configure the build command as `npm run build`.
 4. Configure production deploy as `npx wrangler deploy` and non-production deploy as `npx wrangler versions upload`. Workers Builds uses the project-local Wrangler version from `package-lock.json`.
-5. Add `discover.ohmyfeed.stream` as the Worker Custom Domain. `wrangler.jsonc` declares that hostname for the `oh-my-feed-discover` Worker.
+5. Add `discover.ohmyfeed.stream` as the Worker Custom Domain. Until the neutral experiment hub is deployed, `ohmyfeed.stream` also points to this Worker so the purchased root domain never returns NXDOMAIN. `wrangler.jsonc` declares both temporary production hostnames.
 6. Let Workers Builds inject `WORKERS_CI_COMMIT_SHA` and `WORKERS_CI_BRANCH` only during the build. They are compiled into the public health metadata module, never read as runtime secrets.
 
 GitHub Actions is quality-only. `.github/workflows/ci.yml` runs pinned actions, Node 22, `npm ci`, `npm test`, `npm run check`, `npm run build`, and a commit-range whitespace check; it has no Cloudflare credentials or deploy step. Once the repository owner grants the Cloudflare GitHub App access to this single repository, Cloudflare Workers Builds will own preview and production deployment.
@@ -54,6 +54,7 @@ Verify the current manual M0 deployment rather than only the upload result:
 
 ```bash
 curl --fail --silent --show-error https://discover.ohmyfeed.stream/ | grep -F '<title>Oh My Feed Discover</title>'
+curl --fail --silent --show-error https://ohmyfeed.stream/ | grep -F '<title>Oh My Feed Discover</title>'
 curl --fail --silent --show-error https://discover.ohmyfeed.stream/styles.css > /dev/null
 curl --fail --silent --show-error https://discover.ohmyfeed.stream/app.js > /dev/null
 ```

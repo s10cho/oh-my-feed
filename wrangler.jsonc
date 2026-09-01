@@ -11,6 +11,10 @@
     {
       "pattern": "discover.ohmyfeed.stream",
       "custom_domain": true
+    },
+    {
+      "pattern": "ohmyfeed.stream",
+      "custom_domain": true
     }
   ]
 }
