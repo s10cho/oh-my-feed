@@ -12,7 +12,9 @@
     {
       "id": "item-mcp-auth",
       "source": "Model Context Protocol",
+      "category": "공식 업데이트",
       "title": "Authorization guidance for remote MCP servers",
+      "summary": "원격 MCP 서버가 사용자의 동의를 받고 안전하게 권한을 위임하는 방식을 설명합니다.",
       "url": "https://example.com/mcp-authorization",
       "publishedAt": "2026-09-01T01:00:00Z",
       "selectedForToday": true,
@@ -28,7 +30,9 @@
     {
       "id": "item-structured-outputs",
       "source": "Example AI Platform",
+      "category": "도구와 제품",
       "title": "Reliable structured outputs for agent tools",
+      "summary": "에이전트 도구 호출에서 예측 가능한 구조의 결과를 받기 위한 새로운 기능을 소개합니다.",
       "url": "https://example.com/structured-outputs",
       "publishedAt": "2026-08-31T23:00:00Z",
       "selectedForToday": true,
@@ -39,7 +43,9 @@
     {
       "id": "item-local-first-sync",
       "source": "Local-first Software",
+      "category": "개발 가이드",
       "title": "Conflict-safe sync patterns for personal knowledge apps",
+      "summary": "개인 지식 앱이 여러 기기에서 충돌 없이 데이터를 합치는 설계 패턴을 다룹니다.",
       "url": "https://example.com/local-first-sync",
       "publishedAt": "2026-08-31T21:00:00Z",
       "selectedForToday": true,
@@ -50,7 +56,9 @@
     {
       "id": "item-image-model",
       "source": "Example AI Lab",
+      "category": "연구와 논문",
       "title": "A new image generation model",
+      "summary": "이미지 생성 품질과 편집 제어를 개선한 새 모델의 연구 결과를 소개합니다.",
       "url": "https://example.com/image-model",
       "publishedAt": "2026-08-31T20:00:00Z",
       "selectedForToday": false,
@@ -61,7 +69,9 @@
     {
       "id": "item-css-update",
       "source": "Web Platform Blog",
+      "category": "공식 업데이트",
       "title": "New CSS layout capabilities",
+      "summary": "웹 인터페이스의 복잡한 배치를 단순화하는 CSS 기능 업데이트입니다.",
       "url": "https://example.com/css-layout",
       "publishedAt": "2026-08-31T18:00:00Z",
       "selectedForToday": false,
@@ -72,7 +82,9 @@
     {
       "id": "item-consumer-ai",
       "source": "Example News",
+      "category": "도구와 제품",
       "title": "Consumer AI application trends",
+      "summary": "최근 소비자용 AI 애플리케이션에서 나타나는 제품 변화와 사용 패턴을 정리합니다.",
       "url": "https://example.com/consumer-ai",
       "publishedAt": "2026-08-31T16:00:00Z",
       "selectedForToday": false,

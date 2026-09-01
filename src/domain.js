@@ -13,6 +13,12 @@ export function visibleTodayItems(session) {
   );
 }
 
+export function visibleBrowseItems(session) {
+  return session.items.filter(
+    (item) => item.humanState.visibility === "visible",
+  );
+}
+
 export function markOpened(session, itemId) {
   const item = requireItem(session, itemId);
   item.humanState.readState = "read";

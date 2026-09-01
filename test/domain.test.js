@@ -6,6 +6,7 @@ import {
   decideSuggestion,
   markOpened,
   setVisibility,
+  visibleBrowseItems,
   visibleTodayItems,
 } from "../src/domain.js";
 
@@ -24,6 +25,13 @@ test("agent review does not mark the human item as read", () => {
 
   assert.equal(item.humanState.readState, "read");
   assert.equal(item.agentState.reviewState, "reviewed");
+});
+
+test("browse includes visible items without pretending they are personalized", () => {
+  const session = createSession(fixture);
+
+  assert.equal(visibleBrowseItems(session).length, 5);
+  assert.equal(visibleTodayItems(session).length, 3);
 });
 
 test("hiding an item removes it from Today without deleting agent state", () => {

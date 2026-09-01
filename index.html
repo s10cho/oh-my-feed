@@ -7,7 +7,7 @@
       name="description"
       content="오늘 중요한 기술 정보를 프로젝트와 AI 지식으로 연결하는 Oh My Feed MVP"
     />
-    <title>Oh My Feed — 오늘의 판단</title>
+    <title>Oh My Feed — 새 소식과 내 피드</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 fill=%22%23172033%22/><path d=%22M8 9h16v3H8zm0 6h11v3H8zm0 6h14v3H8z%22 fill=%22white%22/></svg>" />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -18,7 +18,11 @@
           <span class="brand-mark" aria-hidden="true">OMF</span>
           <span>Oh My Feed</span>
         </a>
-        <div class="project-chip">
+        <nav class="feed-modes" aria-label="피드 보기">
+          <button class="mode-button" type="button" data-mode="browse">둘러보기</button>
+          <button class="mode-button" type="button" data-mode="personalized">내 피드</button>
+        </nav>
+        <div class="project-chip" id="project-chip" hidden>
           <span class="project-dot" aria-hidden="true"></span>
           <span id="project-name">프로젝트 불러오는 중</span>
         </div>
@@ -27,44 +31,42 @@
       <main>
         <section class="brief" id="today" aria-labelledby="brief-title">
           <div class="brief-copy">
-            <p class="eyebrow">2026.09.01 · TODAY DESK</p>
-            <h1 id="brief-title">오늘 판단할 것만<br />남겼습니다.</h1>
-            <p class="brief-description">
-              새 소식을 더 모으지 않습니다. 지금 프로젝트에 영향을 줄 정보부터 확인하세요.
-            </p>
+            <p class="eyebrow" id="brief-eyebrow">2026.09.01 · LATEST</p>
+            <h1 id="brief-title">새로 나온 소식</h1>
+            <p class="brief-description" id="brief-description">AI·개발 분야의 새 글을 한곳에서 확인하세요.</p>
           </div>
-          <div class="reduction" aria-label="오늘의 정보 선별 결과">
-            <div><strong id="new-count">—</strong><span>새 항목</span></div>
-            <span class="reduction-arrow" aria-hidden="true">→</span>
-            <div><strong id="today-count">—</strong><span>오늘 볼 것</span></div>
+          <div class="reduction" id="feed-summary" aria-label="피드 요약">
+            <div><strong id="summary-primary">—</strong><span id="summary-primary-label">새 글</span></div>
+            <span class="reduction-arrow" id="summary-arrow" aria-hidden="true">·</span>
+            <div><strong id="summary-secondary">—</strong><span id="summary-secondary-label">카테고리</span></div>
           </div>
         </section>
 
-        <section class="workspace" aria-label="오늘의 피드와 상세 판단">
+        <section class="workspace" aria-label="피드와 글 상세">
           <div class="queue-panel">
             <div class="section-heading">
               <div>
-                <p class="eyebrow">DECISION QUEUE</p>
-                <h2>오늘의 피드</h2>
+                <p class="eyebrow" id="queue-eyebrow">LATEST FEED</p>
+                <h2 id="queue-title">새 글</h2>
               </div>
               <button class="text-button" id="reset-button" type="button">처음부터</button>
             </div>
             <div id="feed-list" class="feed-list" aria-live="polite"></div>
             <div id="empty-feed" class="empty-state" hidden>
-              <strong>오늘의 판단을 마쳤습니다.</strong>
-              <span>숨긴 항목은 처음부터를 누르면 다시 볼 수 있습니다.</span>
+              <strong>표시할 글이 없습니다.</strong>
+              <span>숨긴 글은 처음부터를 누르면 다시 볼 수 있습니다.</span>
             </div>
           </div>
 
           <aside class="detail-panel" id="detail-panel" aria-live="polite">
             <div class="detail-placeholder">
               <span class="placeholder-line"></span>
-              <p>항목을 선택하면<br />프로젝트 영향을 설명합니다.</p>
+              <p id="detail-hint">글을 선택하면<br />내용을 확인할 수 있습니다.</p>
             </div>
           </aside>
         </section>
 
-        <section class="knowledge-section" id="knowledge" aria-labelledby="knowledge-title">
+        <section class="knowledge-section" id="knowledge" aria-labelledby="knowledge-title" hidden>
           <div class="knowledge-heading">
             <p class="eyebrow">APPROVED KNOWLEDGE</p>
             <h2 id="knowledge-title">내 AI가 사용할 수 있는 지식</h2>

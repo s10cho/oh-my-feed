@@ -19,6 +19,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 html { scroll-behavior: smooth; }
 
@@ -49,6 +50,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 .brand { display: flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; font-weight: 700; }
 .brand-mark { padding: 5px 7px; background: var(--ink); color: white; font: 500 11px/1 var(--utility); letter-spacing: .08em; }
+.feed-modes { display: flex; align-self: stretch; gap: 24px; }
+.mode-button { position: relative; border: 0; padding: 2px 0 0; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; }
+.mode-button::after { content: ""; position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; transform: scaleX(0); background: var(--ink); transition: transform 180ms ease; }
+.mode-button.active { color: var(--ink); font-weight: 700; }
+.mode-button.active::after { transform: scaleX(1); }
+.mode-button[data-mode="personalized"]::before { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 6px 2px 0; border-radius: 50%; background: var(--signal); }
 .project-chip { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 .project-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 0 4px var(--signal-soft); }
 
@@ -80,6 +87,9 @@ h1 { margin-bottom: 18px; font-family: var(--display); font-size: clamp(48px, 6v
 .text-button { padding: 5px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
 
 .feed-list { display: grid; }
+.feed-group + .feed-group { margin-top: 26px; }
+.category-heading { display: flex; align-items: center; justify-content: space-between; margin: 0; padding: 0 0 10px; color: var(--muted); font-size: 12px; font-weight: 700; }
+.category-heading span { font: 400 10px/1 var(--utility); }
 .feed-item { width: 100%; display: grid; grid-template-columns: 6px 1fr 88px; gap: 18px; align-items: stretch; padding: 22px 0; border: 0; border-top: 1px solid var(--soft-line); background: transparent; color: inherit; text-align: left; cursor: pointer; }
 .feed-item:last-child { border-bottom: 1px solid var(--soft-line); }
 .feed-item[aria-current="true"] { background: linear-gradient(90deg, transparent 0, #fff 7%, #fff 100%); }
@@ -112,6 +122,12 @@ h1 { margin-bottom: 18px; font-family: var(--display); font-size: clamp(48px, 6v
 .relevance-grid h3 { margin: 0 0 10px; color: var(--muted); font: 500 10px/1 var(--utility); letter-spacing: .1em; }
 .relevance-grid ul { margin: 0; padding-left: 18px; }
 .relevance-grid li { margin: 7px 0; font-size: 14px; }
+.story-summary { max-width: 660px; padding: 26px; background: var(--surface); border: 1px solid var(--line); }
+.story-summary h3 { margin: 0 0 12px; color: var(--muted); font: 500 10px/1 var(--utility); letter-spacing: .08em; }
+.story-summary p { margin: 0; font-size: 16px; line-height: 1.75; }
+.matching-basis { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
+.matching-basis span { margin-right: 4px; color: var(--muted); font-size: 11px; }
+.matching-basis b { padding: 5px 8px; background: var(--signal-soft); color: var(--signal); font: 500 10px/1 var(--utility); }
 .action-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0; }
 .button { border: 1px solid var(--line); padding: 11px 15px; background: var(--surface); color: var(--ink); cursor: pointer; font-weight: 600; font-size: 13px; }
 .button:hover { border-color: var(--ink); }
@@ -122,6 +138,9 @@ h1 { margin-bottom: 18px; font-family: var(--display); font-size: clamp(48px, 6v
 .suggestion-label { color: var(--agent); font: 500 10px/1 var(--utility); letter-spacing: .1em; }
 .suggestion p { margin: 10px 0 18px; font-size: 14px; }
 .decision-row { display: flex; gap: 8px; }
+.personalization-invite { padding: 22px 24px; border-left: 3px solid var(--signal); background: var(--signal-soft); }
+.personalization-invite strong { font-size: 14px; }
+.personalization-invite p { margin: 7px 0 16px; color: var(--muted); font-size: 13px; }
 
 .knowledge-section { padding: 64px 0 24px; }
 .knowledge-heading { max-width: 620px; margin-bottom: 32px; }
@@ -155,11 +174,14 @@ h1 { margin-bottom: 18px; font-family: var(--display); font-size: clamp(48px, 6v
   .queue-panel { padding-right: 0; border-right: 0; border-bottom: 1px solid var(--line); }
   .detail-panel { padding-left: 0; }
   .knowledge-stage { grid-template-columns: 1fr; }
+  .topbar { flex-wrap: wrap; gap: 0 24px; }
+  .feed-modes { order: 3; width: 100%; height: 48px; justify-content: center; }
 }
 
 @media (max-width: 560px) {
   .app-shell { padding-inline: 16px; }
   .project-chip { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .feed-modes { justify-content: flex-start; }
   h1 { font-size: 48px; }
   .reduction strong { font-size: 40px; }
   .workspace { min-height: 0; }
