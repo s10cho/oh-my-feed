@@ -9,7 +9,7 @@ A compact, source-traceable catalog for discovering AI tools and the people or o
 - Cloudflare fallback: https://oh-my-feed-discover.runartica.workers.dev
 - Focus comparison: https://focus.ohmyfeed.stream (separate branch)
 
-This branch implements **Discover M2** in source. Cloudflare deployment is still manual, so the public links may continue to serve the last manually uploaded M0 build until an M2 upload is performed and read back. GitHub Actions remains quality-only; automatic Cloudflare deployment is still pending repository-owner approval for the Cloudflare GitHub App. Do not infer deployment from a successful local build.
+The public links now serve **Discover M2** from Cloudflare deployment version `548dc2dd`, built from source commit `b870211eec5e10b29192f743487bb6e65cf4bf78`. The five deployed assets were read back and matched byte-for-byte with that commit, and the live catalog reports 9 tools and 6 people/organizations. GitHub Actions remains quality-only; automatic Cloudflare deployment is still pending repository-owner approval for the Cloudflare GitHub App. Do not infer a future deployment from a successful local build alone.
 
 ## Problem and M2 experiment
 
@@ -46,7 +46,7 @@ Canonical GitHub entities and discovery mentions are separate fields. Each curre
 
 Two separate measurement layers are planned:
 
-1. **Cloudflare Web Analytics** — aggregate visits, pages, and web-performance reporting in Cloudflare's dashboard. The page contains a disabled configuration point (`cf-web-analytics-token` with an empty value). No beacon loads until an actual site token is supplied by the dashboard owner. No token or site tag is guessed in this repository.
+1. **Cloudflare Web Analytics** — Cloudflare automatically injects its Web Analytics beacon on the deployed custom domain, so aggregate visits, pages, and web-performance reporting are available in Cloudflare's dashboard. The checked-in page keeps `cf-web-analytics-token` empty and does not store or guess a site token; local development therefore loads no beacon.
 2. **First-party product events (future)** — explicit events such as tool-row opens, Tools/People/Categories tab changes, Popular/Newest sort changes, and outbound GitHub clicks. These are not implemented and must not be confused with Cloudflare's basic traffic dashboard or with a `Clicks` ranking.
 
 Any future product-event design must avoid storing raw IP addresses, raw user-agent strings, account identifiers, or other personal data. M2 has no event endpoint, D1 database, account, login, or custom visitor profile.
@@ -62,9 +62,9 @@ AI development tools used on this branch:
 
 ## Implemented / not implemented
 
-Implemented: static responsive catalog, official GitHub snapshot, source validation, deterministic Popular/Newest ranking, reciprocal navigation, external GitHub links, disabled Cloudflare Web Analytics integration point, Worker static-assets build, and `/healthz` source contract.
+Implemented: static responsive catalog, official GitHub snapshot, source validation, deterministic Popular/Newest ranking, reciprocal navigation, external GitHub links, Cloudflare Web Analytics on the deployed custom domain, Worker static-assets build, and `/healthz` source contract.
 
-Not implemented: automatic install, login/accounts, D1, AI features, custom analytics/events, Hot ranking, Clicks ranking, search, personalized recommendations, automated Cloudflare deployment, or an M2 production upload.
+Not implemented: automatic install, login/accounts, D1, AI features, custom product events, Hot ranking, Clicks ranking, search, personalized recommendations, or automated Cloudflare deployment.
 
 ## Local commands
 
@@ -84,7 +84,7 @@ npm start
 
 `wrangler.jsonc` serves `public/` through Workers Static Assets and keeps `discover.ohmyfeed.stream` plus the temporary root-domain route. GitHub Actions has no Cloudflare credentials or deploy step. Once the repository owner grants the Cloudflare GitHub App access, Workers Builds can use `npm run build` and `npx wrangler deploy`; until then deployment remains manual.
 
-For a future M2 manual upload, read back the exact deployment rather than trusting upload output:
+After every manual upload, read back the exact deployment rather than trusting upload output:
 
 ```bash
 curl --fail --silent --show-error https://discover.ohmyfeed.stream/ | grep -F '<title>Oh My Feed Discover — AI tools and makers</title>'
@@ -93,4 +93,4 @@ curl --fail --silent --show-error https://discover.ohmyfeed.stream/catalog.js > 
 curl --fail --silent --show-error https://discover.ohmyfeed.stream/app.js > /dev/null
 ```
 
-The current live deployment must not be called M2 until those checks pass. Rollback remains a manual Cloudflare Dashboard operation to the last known-good version, followed by the same read-back checks.
+Those checks passed for Cloudflare version `548dc2dd`: the root, Discover subdomain, and Workers fallback return the M2 title; `index.html`, `styles.css`, `app.js`, `catalog.js`, and `data/catalog.json` match source commit `b870211eec5e10b29192f743487bb6e65cf4bf78`; and the live snapshot contains 9 tools and 6 people/organizations. Rollback remains a manual Cloudflare Dashboard operation to the last known-good version, followed by the same read-back checks.
