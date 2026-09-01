@@ -1,0 +1,102 @@
+{
+  "asOf": "2026-09-01T09:00:00+09:00",
+  "displayMetrics": { "sourceCount": 15, "newItemCount": 247, "todayCount": 7 },
+  "project": {
+    "id": "project-cowork-22",
+    "name": "Cowork 2.2",
+    "summary": "Core platform upgrade and agent integration",
+    "goals": ["Spring Boot 4 migration", "Elasticsearch upgrade", "AI agent integration"],
+    "technologies": ["Java 21", "Spring Boot", "Elasticsearch", "MCP"]
+  },
+  "items": [
+    {
+      "id": "item-spring-boot-41",
+      "source": "Spring Blog",
+      "title": "Spring Boot 4.1 migration guide",
+      "url": "https://example.com/spring-boot-4-1",
+      "publishedAt": "2026-09-01T01:00:00Z",
+      "selectedForToday": true,
+      "humanState": { "readState": "unread", "saved": false, "visibility": "visible" },
+      "agentState": { "reviewState": "reviewed" },
+      "relevance": {
+        "score": 0.92,
+        "generatedBy": "mock-relevance-v1",
+        "reasons": ["Project goal includes Spring Boot 4 migration", "Java 21 baseline matches the project"],
+        "impact": ["Verify Elasticsearch client compatibility", "Review cowork-search migration plan"]
+      }
+    },
+    {
+      "id": "item-elasticsearch-client",
+      "source": "Elastic Blog",
+      "title": "Elasticsearch Java client compatibility update",
+      "url": "https://example.com/elasticsearch-client-update",
+      "publishedAt": "2026-08-31T23:00:00Z",
+      "selectedForToday": true,
+      "humanState": { "readState": "unread", "saved": false, "visibility": "visible" },
+      "agentState": { "reviewState": "unseen" },
+      "relevance": { "score": 0.78, "generatedBy": "mock-relevance-v1" }
+    },
+    {
+      "id": "item-mcp-auth",
+      "source": "Model Context Protocol",
+      "title": "Authorization guidance for remote MCP servers",
+      "url": "https://example.com/mcp-authorization",
+      "publishedAt": "2026-08-31T21:00:00Z",
+      "selectedForToday": true,
+      "humanState": { "readState": "read", "saved": true, "visibility": "visible" },
+      "agentState": { "reviewState": "reviewed" },
+      "relevance": { "score": 0.71, "generatedBy": "mock-relevance-v1" }
+    },
+    {
+      "id": "item-image-model",
+      "source": "Example AI Lab",
+      "title": "A new image generation model",
+      "url": "https://example.com/image-model",
+      "publishedAt": "2026-08-31T20:00:00Z",
+      "selectedForToday": false,
+      "humanState": { "readState": "unread", "saved": false, "visibility": "visible" },
+      "agentState": { "reviewState": "reviewed" },
+      "relevance": { "score": 0.18, "generatedBy": "mock-relevance-v1" }
+    },
+    {
+      "id": "item-css-update",
+      "source": "Web Platform Blog",
+      "title": "New CSS layout capabilities",
+      "url": "https://example.com/css-layout",
+      "publishedAt": "2026-08-31T18:00:00Z",
+      "selectedForToday": false,
+      "humanState": { "readState": "unread", "saved": false, "visibility": "hidden" },
+      "agentState": { "reviewState": "unseen" },
+      "relevance": { "score": 0.12, "generatedBy": "mock-relevance-v1" }
+    },
+    {
+      "id": "item-consumer-ai",
+      "source": "Example News",
+      "title": "Consumer AI application trends",
+      "url": "https://example.com/consumer-ai",
+      "publishedAt": "2026-08-31T16:00:00Z",
+      "selectedForToday": false,
+      "humanState": { "readState": "unread", "saved": false, "visibility": "visible" },
+      "agentState": { "reviewState": "unseen" },
+      "relevance": { "score": 0.09, "generatedBy": "mock-relevance-v1" }
+    }
+  ],
+  "suggestion": {
+    "id": "suggestion-spring-boot-knowledge",
+    "agentId": "demo-agent",
+    "feedItemId": "item-spring-boot-41",
+    "projectId": "project-cowork-22",
+    "kind": "learn_knowledge",
+    "status": "pending",
+    "confidence": 0.92,
+    "statement": "Spring Boot 4.1 migration may require an explicit Elasticsearch Java client compatibility check.",
+    "evidence": ["item-spring-boot-41"]
+  },
+  "acceptedKnowledgePreview": {
+    "id": "knowledge-spring-boot-41",
+    "sourceItemId": "item-spring-boot-41",
+    "projectId": "project-cowork-22",
+    "approval": "human_approved",
+    "statement": "Spring Boot 4.1 migration may require an explicit Elasticsearch Java client compatibility check."
+  }
+}
