@@ -175,9 +175,12 @@ function renderKnowledge() {
 elements.askForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const knowledge = session.knowledge[0];
+  const sourceItem = knowledge
+    ? session.items.find((item) => item.id === knowledge.sourceItemId)
+    : null;
   elements.answer.hidden = false;
   elements.answer.innerHTML = knowledge
-    ? `<strong>영향 가능성이 있는 변화 1건을 찾았습니다.</strong><p>${escapeHtml(knowledge.statement)}</p><small>근거: 사용자가 승인한 Spring Blog 항목 · ${escapeHtml(data.project.name)}</small>`
+    ? `<strong>설계에 반영할 변화 1건을 찾았습니다.</strong><p>${escapeHtml(knowledge.statement)}</p><small>근거: 사용자가 승인한 ${escapeHtml(sourceItem?.source ?? "원문")} 항목 · ${escapeHtml(data.project.name)}</small>`
     : "<strong>답변할 수 없습니다.</strong><p>아직 사람이 승인한 지식이 없습니다. 먼저 피드에서 AI 제안을 검토하세요.</p>";
 });
 

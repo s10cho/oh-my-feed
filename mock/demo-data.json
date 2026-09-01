@@ -2,18 +2,18 @@
   "asOf": "2026-09-01T09:00:00+09:00",
   "displayMetrics": { "sourceCount": 15, "newItemCount": 247, "todayCount": 7 },
   "project": {
-    "id": "project-cowork-22",
-    "name": "Cowork 2.2",
-    "summary": "Core platform upgrade and agent integration",
-    "goals": ["Spring Boot 4 migration", "Elasticsearch upgrade", "AI agent integration"],
-    "technologies": ["Java 21", "Spring Boot", "Elasticsearch", "MCP"]
+    "id": "project-orbit",
+    "name": "Orbit",
+    "summary": "개인용 AI 리서치 도우미",
+    "goals": ["원격 MCP 도구 연결", "출처 기반 답변", "개인 지식의 안전한 동기화"],
+    "technologies": ["TypeScript", "MCP", "OAuth", "Local-first data"]
   },
   "items": [
     {
-      "id": "item-spring-boot-41",
-      "source": "Spring Blog",
-      "title": "Spring Boot 4.1 migration guide",
-      "url": "https://example.com/spring-boot-4-1",
+      "id": "item-mcp-auth",
+      "source": "Model Context Protocol",
+      "title": "Authorization guidance for remote MCP servers",
+      "url": "https://example.com/mcp-authorization",
       "publishedAt": "2026-09-01T01:00:00Z",
       "selectedForToday": true,
       "humanState": { "readState": "unread", "saved": false, "visibility": "visible" },
@@ -21,15 +21,15 @@
       "relevance": {
         "score": 0.92,
         "generatedBy": "mock-relevance-v1",
-        "reasons": ["Project goal includes Spring Boot 4 migration", "Java 21 baseline matches the project"],
-        "impact": ["Verify Elasticsearch client compatibility", "Review cowork-search migration plan"]
+        "reasons": ["Orbit은 원격 MCP 도구 연결을 계획하고 있습니다", "안전한 사용자 동의와 토큰 흐름이 필요합니다"],
+        "impact": ["OAuth 인증 흐름 검토", "프로토타입에 토큰 저장 경계 추가"]
       }
     },
     {
-      "id": "item-elasticsearch-client",
-      "source": "Elastic Blog",
-      "title": "Elasticsearch Java client compatibility update",
-      "url": "https://example.com/elasticsearch-client-update",
+      "id": "item-structured-outputs",
+      "source": "Example AI Platform",
+      "title": "Reliable structured outputs for agent tools",
+      "url": "https://example.com/structured-outputs",
       "publishedAt": "2026-08-31T23:00:00Z",
       "selectedForToday": true,
       "humanState": { "readState": "unread", "saved": false, "visibility": "visible" },
@@ -37,10 +37,10 @@
       "relevance": { "score": 0.78, "generatedBy": "mock-relevance-v1" }
     },
     {
-      "id": "item-mcp-auth",
-      "source": "Model Context Protocol",
-      "title": "Authorization guidance for remote MCP servers",
-      "url": "https://example.com/mcp-authorization",
+      "id": "item-local-first-sync",
+      "source": "Local-first Software",
+      "title": "Conflict-safe sync patterns for personal knowledge apps",
+      "url": "https://example.com/local-first-sync",
       "publishedAt": "2026-08-31T21:00:00Z",
       "selectedForToday": true,
       "humanState": { "readState": "read", "saved": true, "visibility": "visible" },
@@ -82,21 +82,21 @@
     }
   ],
   "suggestion": {
-    "id": "suggestion-spring-boot-knowledge",
+    "id": "suggestion-mcp-auth-knowledge",
     "agentId": "demo-agent",
-    "feedItemId": "item-spring-boot-41",
-    "projectId": "project-cowork-22",
+    "feedItemId": "item-mcp-auth",
+    "projectId": "project-orbit",
     "kind": "learn_knowledge",
     "status": "pending",
     "confidence": 0.92,
-    "statement": "Spring Boot 4.1 migration may require an explicit Elasticsearch Java client compatibility check.",
-    "evidence": ["item-spring-boot-41"]
+    "statement": "Orbit의 원격 MCP 연결에는 사용자 동의와 토큰 저장 경계를 분리한 OAuth 흐름이 필요하다.",
+    "evidence": ["item-mcp-auth"]
   },
   "acceptedKnowledgePreview": {
-    "id": "knowledge-spring-boot-41",
-    "sourceItemId": "item-spring-boot-41",
-    "projectId": "project-cowork-22",
+    "id": "knowledge-mcp-auth",
+    "sourceItemId": "item-mcp-auth",
+    "projectId": "project-orbit",
     "approval": "human_approved",
-    "statement": "Spring Boot 4.1 migration may require an explicit Elasticsearch Java client compatibility check."
+    "statement": "Orbit의 원격 MCP 연결에는 사용자 동의와 토큰 저장 경계를 분리한 OAuth 흐름이 필요하다."
   }
 }

@@ -14,8 +14,8 @@ Oh My Feed의 차별 가치는 AI 뉴스 요약이 아니라, 사용자가 오�
 
 ## Scope
 
-- 1 persona: Cowork 2.2 전환을 준비하는 개발자
-- 1 project: Cowork 2.2
+- 1 persona: 독립적인 개인 AI 도구를 만드는 개발자
+- 1 project: Orbit(가상의 개인 AI 리서치 도우미)
 - 6 feed items, Today 3 items
 - 1 high-relevance item의 상세 설명
 - 원문 열기, 저장, 프로젝트 연결, 숨김
@@ -47,8 +47,8 @@ mock source collection
 
 `mock/demo-data.json`을 유일한 fixture로 사용한다.
 
-- 관련도 높은 항목 1개: Spring Boot 4.1
-- 관련도 중간 항목 2개: Elasticsearch, MCP authorization
+- 관련도 높은 항목 1개: MCP remote authorization
+- 관련도 중간 항목 2개: structured outputs, local-first sync
 - 낮은 항목 3개: 프로젝트와 무관한 AI/프런트엔드 소식
 - agent가 먼저 검토했지만 사람이 읽지 않은 항목 포함
 - pending suggestion 1개와 승인 후 knowledge 결과 1개 포함
@@ -87,7 +87,7 @@ adapters/
 5명의 대상 사용자에게 별도 제품 설명 없이 3분 데모를 보여준다.
 
 1. 첫 화면을 10초 보여주고 제품이 하는 일을 묻는다.
-2. Spring Boot 항목을 처리하게 하고 행동 이유를 말하게 한다.
+2. MCP authorization 항목을 처리하게 하고 행동 이유를 말하게 한다.
 3. 저장과 학습의 차이를 묻는다.
 4. agent가 reviewed, 사람은 unread인 항목의 상태를 묻는다.
 5. 마지막 Q&A가 어디에서 근거를 가져왔는지 찾게 한다.

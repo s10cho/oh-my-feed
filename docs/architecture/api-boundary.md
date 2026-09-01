@@ -51,8 +51,8 @@ AI 관련 응답은 최소한 아래 필드를 포함한다.
 
 ```json
 {
-  "sourceItemId": "item-spring-boot-41",
-  "sourceUrl": "https://example.com/spring-boot-4-1",
+  "sourceItemId": "item-mcp-auth",
+  "sourceUrl": "https://example.com/mcp-authorization",
   "generatedBy": "mock-relevance-v1",
   "generatedAt": "2026-09-01T00:00:00Z",
   "confidence": 0.92

@@ -15,7 +15,7 @@ const fixture = JSON.parse(
 
 test("agent review does not mark the human item as read", () => {
   const session = createSession(fixture);
-  const item = session.items.find(({ id }) => id === "item-spring-boot-41");
+  const item = session.items.find(({ id }) => id === "item-mcp-auth");
 
   assert.equal(item.agentState.reviewState, "reviewed");
   assert.equal(item.humanState.readState, "unread");
@@ -28,7 +28,7 @@ test("agent review does not mark the human item as read", () => {
 
 test("hiding an item removes it from Today without deleting agent state", () => {
   const session = createSession(fixture);
-  const itemId = "item-spring-boot-41";
+  const itemId = "item-mcp-auth";
 
   setVisibility(session, itemId, "hidden");
 
