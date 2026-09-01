@@ -30,7 +30,7 @@ M2 includes:
 
 ## Catalog snapshot
 
-The checked-in seed is isolated at `public/data/catalog.json`. Regenerate it from the official GitHub API with:
+The checked-in seed is isolated at `public/data/catalog.json`. Its normalized schema and deterministic v1 migration are documented in [the canonical entity and source contract](docs/architecture/catalog-source-contract.md). Regenerate it from the official GitHub API with:
 
 ```bash
 npm run refresh:catalog
@@ -40,7 +40,7 @@ The dependency-free script in `scripts/fetch-catalog.mjs` owns the bounded repos
 
 The current snapshot was collected at `2026-09-01T13:37:31.399Z`. Stars, forks, descriptions, profiles, and repository dates are point-in-time GitHub values and will change on a later refresh. `DreambigOu/ELI5` is represented by its own repository metrics; the repository-level catalog does not include Anthropic's `claude-plugins-community/eli5` subdirectory, so parent-repository stars are never presented as plugin stars.
 
-Canonical GitHub entities and discovery mentions are separate fields. Each current tool has an `m2-editorial` source mention with an empty source-specific `signals` array. The OMC/OMX product-family relation is also explicitly marked `editorial_relation` with an observation time and GitHub evidence URLs; it is not presented as a GitHub API field. A future GeekNews source can add a separate mention and a GeekNews-points signal without overwriting or mixing it with GitHub stars. M2 does not implement a GeekNews scraper or ingest any GeekNews points.
+Canonical GitHub entities, tool-maker relations, discovery mentions, and metric snapshots are separate schema-v2 collections. Each current tool has a top-level `ohmyfeed.editorial` source mention and a `github.repository` metric snapshot; GitHub stars/forks are never embedded into discovery records. Future GeekNews, Hacker News, and Product Hunt mentions can carry source-native points/comments in their own metric namespaces, while first-party clicks remain the `clicks` metric in the `ohmyfeed` namespace; none can overwrite GitHub stars. The OMC/OMX product-family relation is explicitly marked `editorial_relation` with an observation time and GitHub evidence URLs; it is not presented as a GitHub API field. M2 does not implement a discovery-source scraper or ingest any source points, comments, or clicks.
 
 ## Analytics and product events
 

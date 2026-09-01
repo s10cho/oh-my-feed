@@ -1,4 +1,4 @@
-import { sortCatalog } from "./catalog.js";
+import { createCatalogView, sortCatalog } from "./catalog.js";
 
 document.documentElement.classList.add("js");
 enableCloudflareWebAnalytics();
@@ -21,7 +21,7 @@ let catalog;
 try {
   const response = await fetch("./data/catalog.json");
   if (!response.ok) throw new Error(`Catalog request failed with ${response.status}`);
-  catalog = await response.json();
+  catalog = createCatalogView(await response.json());
   restoreStateFromLocation();
   bindControls();
   render();

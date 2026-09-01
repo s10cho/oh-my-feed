@@ -1,13 +1,20 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { validateCatalogSnapshot } from "../public/catalog.js";
+import {
+  canonicalizeGitHubRepositoryUrl,
+  createCatalogView,
+  validateCatalogSnapshot,
+} from "../public/catalog.js";
 
 const snapshot = JSON.parse(
   await readFile(new URL("../public/data/catalog.json", import.meta.url), "utf8"),
 );
 
-test("catalog snapshot is a traceable GitHub API sample with bounded real entities", () => {
+const view = snapshot.schemaVersion === 2 ? createCatalogView(snapshot) : null;
+
+test("catalog snapshot is a schema-v2 traceable GitHub API sample with bounded real entities", () => {
+  assert.equal(snapshot.schemaVersion, 2);
   assert.deepEqual(validateCatalogSnapshot(snapshot), []);
   assert.ok(snapshot.tools.length >= 6 && snapshot.tools.length <= 10);
   assert.ok(snapshot.makers.length >= 4 && snapshot.makers.length <= 6);
@@ -17,18 +24,39 @@ test("catalog snapshot is a traceable GitHub API sample with bounded real entiti
   assert.equal(snapshot.clicks.status, "not_collected");
 });
 
-test("every tool and maker has official source identifiers, real GitHub links, and bidirectional relations", () => {
-  const makerById = new Map(snapshot.makers.map((maker) => [maker.id, maker]));
+test("canonical tools, makers, owner relations, and GitHub metrics are separate but project to the M2 UI", () => {
+  const relationByTool = new Map(snapshot.toolMakerRelations.map((relation) => [relation.toolId, relation]));
+  const githubMetricByTool = new Map(
+    snapshot.metricSnapshots
+      .filter(({ namespace }) => namespace === "github.repository")
+      .map((metric) => [metric.entityId, metric]),
+  );
+  const makerById = new Map(view.makers.map((maker) => [maker.id, maker]));
 
   for (const tool of snapshot.tools) {
     assert.equal(Number.isInteger(tool.sourceId), true);
     assert.equal(tool.sourceIdentifier, `github:repository:${tool.sourceId}`);
     assert.match(tool.sourceUrl, /^https:\/\/api\.github\.com\/repos\//);
-    assert.match(tool.repositoryUrl, /^https:\/\/github\.com\//);
-    assert.equal(typeof tool.stars, "number");
-    assert.equal(typeof tool.forks, "number");
-    assert.ok(makerById.get(tool.makerId)?.toolIds.includes(tool.id));
-    assert.equal("clicks" in tool, false);
+    assert.equal(tool.id, canonicalizeGitHubRepositoryUrl(tool.repositoryUrl).id);
+    assert.equal("makerId" in tool, false);
+    assert.equal("stars" in tool, false);
+    assert.equal("forks" in tool, false);
+    assert.equal("sourceMentions" in tool, false);
+
+    const relation = relationByTool.get(tool.id);
+    assert.equal(relation.kind, "owner");
+    assert.ok(makerById.get(relation.makerId)?.toolIds.includes(tool.id));
+
+    const metric = githubMetricByTool.get(tool.id);
+    assert.equal(metric.entityType, "tool");
+    assert.equal(typeof metric.metrics.stars, "number");
+    assert.equal(typeof metric.metrics.forks, "number");
+    assert.equal(metric.fetchedAt, snapshot.collectedAt);
+
+    const uiTool = view.tools.find(({ id }) => id === tool.id);
+    assert.equal(uiTool.makerId, relation.makerId);
+    assert.equal(uiTool.stars, metric.metrics.stars);
+    assert.equal(uiTool.forks, metric.metrics.forks);
   }
 
   for (const maker of snapshot.makers) {
@@ -36,19 +64,21 @@ test("every tool and maker has official source identifiers, real GitHub links, a
     assert.equal(maker.sourceIdentifier, `github:user:${maker.sourceId}`);
     assert.match(maker.sourceUrl, /^https:\/\/api\.github\.com\/users\//);
     assert.match(maker.profileUrl, /^https:\/\/github\.com\//);
-    assert.ok(maker.toolIds.length > 0);
+    assert.equal("toolIds" in maker, false);
+    assert.ok(makerById.get(maker.id).toolIds.length > 0);
   }
 });
 
-test("validator rejects dangling maker relations and fabricated clicks", () => {
+test("validator rejects dangling owner relations and legacy metric fields on canonical tools", () => {
   const invalid = structuredClone(snapshot);
-  invalid.tools[0].makerId = "missing-maker";
+  invalid.toolMakerRelations[0].makerId = "missing-maker";
   invalid.tools[0].clicks = 123;
+  invalid.tools[0].stars = 456;
 
-  assert.deepEqual(validateCatalogSnapshot(invalid), [
-    `tools[0].makerId references missing maker: missing-maker`,
-    "tools[0].clicks must be absent until collection exists",
-  ]);
+  const errors = validateCatalogSnapshot(invalid);
+  assert.ok(errors.some((error) => error.includes("references missing maker: missing-maker")));
+  assert.ok(errors.some((error) => error.includes("tools[0].clicks must be absent")));
+  assert.ok(errors.some((error) => error.includes("tools[0].stars must be absent")));
 });
 
 test("curated sample includes verified emerging tools, notable makers, and explicit ranking semantics", () => {
@@ -66,7 +96,7 @@ test("curated sample includes verified emerging tools, notable makers, and expli
   assert.match(snapshot.makers.find(({ id }) => id === "garrytan").displayName, /Garry Tan/i);
   assert.deepEqual(snapshot.rankingSemantics, {
     hot: { status: "not_calculated", label: "Hot is not available yet" },
-    popular: { metric: "stargazers_count", label: "Popular = GitHub stars" },
+    popular: { metric: "github.repository.stars", label: "Popular = GitHub stars" },
     newest: { metric: "created_at", label: "Newest = repository creation date" },
   });
 });
@@ -90,14 +120,16 @@ test("official Oh My repositories share one family without grouping the inspired
   assert.equal(snapshot.tools.find(({ id }) => id === "dreambigou/eli5").fullName, "DreambigOu/ELI5");
 });
 
-test("canonical GitHub entities keep discovery mentions and source-specific signals separate", () => {
+test("discovery mentions are separate from canonical entities and carry no fabricated source metrics", () => {
   assert.deepEqual(snapshot.discoverySources, [
     { id: "m2-editorial", label: "M2 manual catalog seed", kind: "editorial_selection" },
   ]);
-  for (const tool of snapshot.tools) {
-    assert.deepEqual(tool.sourceMentions, [
-      { sourceId: "m2-editorial", observedAt: snapshot.collectedAt, signals: [] },
-    ]);
-    assert.equal("points" in tool, false);
+  assert.equal(snapshot.sourceMentions.length, snapshot.tools.length);
+  for (const mention of snapshot.sourceMentions) {
+    assert.equal(mention.sourceNamespace, "ohmyfeed.editorial");
+    assert.equal(mention.sourceItemId, "m2-editorial");
+    assert.equal(mention.observedAt, snapshot.collectedAt);
+    assert.equal(snapshot.tools.some(({ id }) => id === mention.toolId), true);
   }
+  assert.equal(snapshot.metricSnapshots.some(({ namespace }) => namespace !== "github.repository"), false);
 });

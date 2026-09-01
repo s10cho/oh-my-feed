@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { canonicalizeGitHubRepositoryUrl } from "../public/catalog.js";
 
 const selections = [
   ["browser-use/browser-use", "browser-automation"],
@@ -64,33 +65,29 @@ const owners = await Promise.all(
 );
 const collectedAt = new Date().toISOString();
 
-const tools = repositories.map(({ categoryId, data }) => ({
-  id: data.full_name.toLowerCase(),
-  name: data.name,
-  fullName: data.full_name,
-  description: data.description ?? "No GitHub description provided.",
-  categoryId,
-  makerId: data.owner.login.toLowerCase(),
-  familyId: familyByToolId.get(data.full_name.toLowerCase()) ?? null,
-  repositoryUrl: data.html_url,
-  homepage: data.homepage || null,
-  stars: data.stargazers_count,
-  forks: data.forks_count,
-  language: data.language,
-  license: data.license?.spdx_id ?? null,
-  topics: data.topics,
-  createdAt: data.created_at,
-  updatedAt: data.updated_at,
-  pushedAt: data.pushed_at,
-  sourceId: data.id,
-  sourceIdentifier: `github:repository:${data.id}`,
-  sourceUrl: data.url,
-  sourceMentions: [
-    { sourceId: "m2-editorial", observedAt: collectedAt, signals: [] },
-  ],
-}));
+const tools = repositories.map(({ categoryId, data }) => {
+  const canonical = canonicalizeGitHubRepositoryUrl(data.html_url);
+  return {
+    id: canonical.id,
+    name: data.name,
+    fullName: data.full_name,
+    description: data.description ?? "No GitHub description provided.",
+    categoryId,
+    familyId: familyByToolId.get(canonical.id) ?? null,
+    repositoryUrl: canonical.repositoryUrl,
+    homepage: data.homepage || null,
+    language: data.language,
+    license: data.license?.spdx_id ?? null,
+    topics: data.topics,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    pushedAt: data.pushed_at,
+    sourceId: data.id,
+    sourceIdentifier: `github:repository:${data.id}`,
+    sourceUrl: data.url,
+  };
+});
 
-const toolsByMaker = Map.groupBy(tools, ({ makerId }) => makerId);
 const makers = owners.map((owner) => ({
   id: owner.login.toLowerCase(),
   login: owner.login,
@@ -102,11 +99,49 @@ const makers = owners.map((owner) => ({
   sourceId: owner.id,
   sourceIdentifier: `github:user:${owner.id}`,
   sourceUrl: owner.url,
-  toolIds: (toolsByMaker.get(owner.login.toLowerCase()) ?? []).map(({ id }) => id).sort(),
 }));
 
+const toolMakerRelations = repositories.map(({ data }) => {
+  const canonical = canonicalizeGitHubRepositoryUrl(data.html_url);
+  const makerId = data.owner.login.toLowerCase();
+  return {
+    id: `github.owner:${canonical.id}:${makerId}`,
+    toolId: canonical.id,
+    makerId,
+    kind: "owner",
+    sourceNamespace: "github",
+    evidenceUrl: canonical.repositoryUrl,
+    observedAt: collectedAt,
+  };
+});
+
+const sourceMentions = tools.map((tool) => ({
+  id: `ohmyfeed.editorial:m2-editorial:${tool.id}`,
+  toolId: tool.id,
+  sourceNamespace: "ohmyfeed.editorial",
+  sourceItemId: "m2-editorial",
+  url: null,
+  observedAt: collectedAt,
+}));
+
+const metricSnapshots = repositories.map(({ data }) => {
+  const canonical = canonicalizeGitHubRepositoryUrl(data.html_url);
+  return {
+    id: `github.repository:${canonical.id}:${collectedAt}`,
+    entityType: "tool",
+    entityId: canonical.id,
+    namespace: "github.repository",
+    metrics: {
+      stars: data.stargazers_count,
+      forks: data.forks_count,
+    },
+    fetchedAt: collectedAt,
+    sourceUrl: data.url,
+  };
+});
+
 const snapshot = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   collectedAt,
   source: {
     provider: "GitHub REST API",
@@ -121,7 +156,7 @@ const snapshot = {
   },
   rankingSemantics: {
     hot: { status: "not_calculated", label: "Hot is not available yet" },
-    popular: { metric: "stargazers_count", label: "Popular = GitHub stars" },
+    popular: { metric: "github.repository.stars", label: "Popular = GitHub stars" },
     newest: { metric: "created_at", label: "Newest = repository creation date" },
   },
   discoverySources: [
@@ -131,6 +166,9 @@ const snapshot = {
   categories,
   tools,
   makers,
+  toolMakerRelations,
+  sourceMentions,
+  metricSnapshots,
 };
 
 await mkdir(new URL("../public/data/", import.meta.url), { recursive: true });
