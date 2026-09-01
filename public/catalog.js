@@ -1,3 +1,5 @@
+import { isSafeUrl } from "./url-safety.js";
+
 const compareCodePoints = (left, right) => left < right ? -1 : left > right ? 1 : 0;
 
 const sorters = {
@@ -50,27 +52,35 @@ export function canonicalizeGitHubRepositoryUrl(repositoryUrl) {
   };
 }
 
-const metricKeysByNamespace = {
-  "github.repository": ["stars", "forks"],
-  geeknews: ["points", "comments"],
-  hackernews: ["points", "comments"],
-  producthunt: ["points", "comments"],
-  ohmyfeed: ["clicks"],
-};
+const metricKeysByNamespace = new Map([
+  ["github.repository", ["stars", "forks"]],
+  ["geeknews", ["points", "comments"]],
+  ["hackernews", ["points", "comments"]],
+  ["producthunt", ["points", "comments"]],
+  ["ohmyfeed", ["clicks"]],
+]);
 
-const metricEntityTypeByNamespace = {
-  "github.repository": "tool",
-  geeknews: "sourceMention",
-  hackernews: "sourceMention",
-  producthunt: "sourceMention",
-  ohmyfeed: "tool",
-};
+const metricEntityTypeByNamespace = new Map([
+  ["github.repository", "tool"],
+  ["geeknews", "sourceMention"],
+  ["hackernews", "sourceMention"],
+  ["producthunt", "sourceMention"],
+  ["ohmyfeed", "tool"],
+]);
 
 const sourceMentionNamespaces = new Set([
   "ohmyfeed.editorial",
   "geeknews",
   "hackernews",
   "producthunt",
+]);
+
+const sourceUrlUsageByNamespace = new Map([
+  ["github.repository", "github.repositoryApi"],
+  ["geeknews", "geeknews.item"],
+  ["hackernews", "hackernews.item"],
+  ["producthunt", "producthunt.item"],
+  ["ohmyfeed", "ohmyfeed.item"],
 ]);
 
 function requireValidCatalogSnapshot(snapshot) {
@@ -190,6 +200,16 @@ function appendDuplicateIdErrors(errors, collectionName, entries) {
   }
 }
 
+function appendDuplicateFieldErrors(errors, collectionName, entries, field) {
+  const seen = new Set();
+  for (const entry of entries) {
+    if (seen.has(entry[field])) {
+      errors.push(`${collectionName} has duplicate ${field}: ${entry[field]}`);
+    }
+    seen.add(entry[field]);
+  }
+}
+
 function appendRequiredFieldErrors(errors, collectionName, index, entry, fields) {
   for (const field of fields) {
     const value = entry?.[field];
@@ -207,8 +227,27 @@ function isCanonicalIsoTimestamp(value) {
   return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
 }
 
+function isIsoTimestamp(value) {
+  return typeof value === "string"
+    && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value)
+    && Number.isFinite(Date.parse(value));
+}
+
+function isRecord(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function appendStringFieldErrors(errors, collectionName, index, entry, fields) {
+  for (const field of fields) {
+    if (typeof entry[field] !== "string" || entry[field].length === 0) {
+      errors.push(`${collectionName}[${index}].${field} must be a non-empty string`);
+    }
+  }
+}
+
 export function validateCatalogSnapshot(snapshot) {
   const errors = [];
+  if (!isRecord(snapshot)) return ["catalog snapshot must be an object"];
   if (![1, 2].includes(snapshot.schemaVersion)) {
     return [`Unsupported catalog schema version: ${snapshot.schemaVersion}`];
   }
@@ -219,6 +258,8 @@ export function validateCatalogSnapshot(snapshot) {
 
   if (snapshot.schemaVersion === 2) {
     const collectionNames = [
+      "categories",
+      "productFamilies",
       "tools",
       "makers",
       "toolMakerRelations",
@@ -230,27 +271,180 @@ export function validateCatalogSnapshot(snapshot) {
         errors.push(`${collectionName} must be an array in schema v2`);
       }
     }
+    if (!isRecord(snapshot.source)) errors.push("source must be an object in schema v2");
+    if (!isCanonicalIsoTimestamp(snapshot.collectedAt)) errors.push("collectedAt must be an ISO timestamp");
+    if (isRecord(snapshot.source)) {
+      for (const field of ["provider", "apiVersion"]) {
+        if (typeof snapshot.source[field] !== "string" || snapshot.source[field].length === 0) {
+          errors.push(`source.${field} must be a non-empty string`);
+        }
+      }
+    }
     if (errors.length > 0) return errors;
 
     for (const collectionName of collectionNames) {
       appendDuplicateIdErrors(errors, collectionName, snapshot[collectionName]);
     }
     if (errors.some((error) => error.endsWith("must be an object"))) return errors;
+    appendDuplicateFieldErrors(errors, "tools", snapshot.tools, "sourceIdentifier");
+    appendDuplicateFieldErrors(errors, "makers", snapshot.makers, "sourceIdentifier");
     makers = new Set(snapshot.makers.map(({ id }) => id));
 
     const tools = new Set(snapshot.tools.map(({ id }) => id));
+    const toolById = new Map(snapshot.tools.map((tool) => [tool.id, tool]));
+    const categories = new Set(snapshot.categories.map(({ id }) => id));
+    const familyById = new Map(snapshot.productFamilies.map((family) => [family.id, family]));
+    const families = new Set(familyById.keys());
     const canonicalOwnerByTool = new Map();
     const canonicalRepositoryByTool = new Map();
     const mentionById = new Map(snapshot.sourceMentions.map((mention) => [mention.id, mention]));
     const mentions = new Set(mentionById.keys());
 
+    for (const [index, category] of snapshot.categories.entries()) {
+      appendRequiredFieldErrors(errors, "categories", index, category, ["id", "name", "description"]);
+      appendStringFieldErrors(errors, "categories", index, category, ["id", "name", "description"]);
+    }
+
+    for (const [index, family] of snapshot.productFamilies.entries()) {
+      appendRequiredFieldErrors(errors, "productFamilies", index, family, [
+        "id",
+        "name",
+        "makerId",
+        "toolIds",
+        "relationKind",
+        "evidenceUrls",
+        "observedAt",
+      ]);
+      appendStringFieldErrors(errors, "productFamilies", index, family, ["id", "name", "makerId", "relationKind", "observedAt"]);
+      if (!makers.has(family.makerId)) {
+        errors.push(`productFamilies[${index}].makerId references missing maker: ${family.makerId}`);
+      }
+      if (!Array.isArray(family.toolIds)) {
+        errors.push(`productFamilies[${index}].toolIds must be an array`);
+      } else {
+        for (const [toolIndex, toolId] of family.toolIds.entries()) {
+          if (!tools.has(toolId)) {
+            errors.push(`productFamilies[${index}].toolIds[${toolIndex}] references missing tool: ${toolId}`);
+          } else if (toolById.get(toolId).familyId !== family.id) {
+            errors.push(`productFamilies[${index}].toolIds[${toolIndex}] familyId must match product family`);
+          }
+        }
+      }
+      if (!Array.isArray(family.evidenceUrls)) {
+        errors.push(`productFamilies[${index}].evidenceUrls must be an array`);
+      } else {
+        for (const [urlIndex, evidenceUrl] of family.evidenceUrls.entries()) {
+          if (!isSafeUrl(evidenceUrl, "github.evidence")) {
+            errors.push(`productFamilies[${index}].evidenceUrls[${urlIndex}] must be a safe GitHub URL`);
+          }
+        }
+      }
+      if (!isCanonicalIsoTimestamp(family.observedAt)) {
+        errors.push(`productFamilies[${index}].observedAt must be an ISO timestamp`);
+      }
+    }
+
     for (const [index, maker] of (snapshot.makers ?? []).entries()) {
-      appendRequiredFieldErrors(errors, "makers", index, maker, ["id", "displayName"]);
+      appendRequiredFieldErrors(errors, "makers", index, maker, [
+        "id",
+        "login",
+        "displayName",
+        "type",
+        "avatarUrl",
+        "profileUrl",
+        "sourceId",
+        "sourceIdentifier",
+        "sourceUrl",
+      ]);
+      appendStringFieldErrors(errors, "makers", index, maker, [
+        "id",
+        "login",
+        "displayName",
+        "type",
+        "avatarUrl",
+        "profileUrl",
+        "sourceIdentifier",
+        "sourceUrl",
+      ]);
+      if (!Object.hasOwn(maker, "description") || (maker.description !== null && typeof maker.description !== "string")) {
+        errors.push(`makers[${index}].description must be a string or null`);
+      }
+      if (!Number.isInteger(maker.sourceId) || maker.sourceId < 0) {
+        errors.push(`makers[${index}].sourceId must be a non-negative integer`);
+      }
+      if (maker.sourceIdentifier !== `github:user:${maker.sourceId}`) {
+        errors.push(`makers[${index}].sourceIdentifier must match sourceId`);
+      }
+      if (maker.id !== maker.login?.toLowerCase()) {
+        errors.push(`makers[${index}].id must equal lowercase login`);
+      }
+      if (!isSafeUrl(maker.avatarUrl, "github.avatar")) {
+        errors.push(`makers[${index}].avatarUrl must be a safe GitHub avatar URL`);
+      }
+      if (!isSafeUrl(maker.profileUrl, "github.profile")) {
+        errors.push(`makers[${index}].profileUrl must be a safe GitHub profile URL`);
+      } else if (new URL(maker.profileUrl).pathname.toLowerCase() !== `/${maker.login?.toLowerCase()}`) {
+        errors.push(`makers[${index}].profileUrl must match login`);
+      }
+      if (!isSafeUrl(maker.sourceUrl, "github.userApi")) {
+        errors.push(`makers[${index}].sourceUrl must be a safe GitHub user API URL`);
+      } else if (new URL(maker.sourceUrl).pathname.toLowerCase() !== `/users/${maker.login?.toLowerCase()}`) {
+        errors.push(`makers[${index}].sourceUrl must match login`);
+      }
       if (Object.hasOwn(maker, "toolIds")) errors.push(`makers[${index}].toolIds must be absent in schema v2`);
     }
 
     for (const [index, tool] of (snapshot.tools ?? []).entries()) {
-      appendRequiredFieldErrors(errors, "tools", index, tool, ["id", "name", "repositoryUrl"]);
+      appendRequiredFieldErrors(errors, "tools", index, tool, [
+        "id",
+        "name",
+        "fullName",
+        "description",
+        "categoryId",
+        "repositoryUrl",
+        "createdAt",
+        "sourceId",
+        "sourceIdentifier",
+        "sourceUrl",
+      ]);
+      appendStringFieldErrors(errors, "tools", index, tool, [
+        "id",
+        "name",
+        "fullName",
+        "description",
+        "categoryId",
+        "repositoryUrl",
+        "createdAt",
+        "sourceIdentifier",
+        "sourceUrl",
+      ]);
+      if (!Object.hasOwn(tool, "familyId")) {
+        errors.push(`tools[${index}].familyId is required`);
+      }
+      if (!categories.has(tool.categoryId)) {
+        errors.push(`tools[${index}].categoryId references missing category: ${tool.categoryId}`);
+      }
+      if (tool.familyId !== null && tool.familyId !== undefined && !families.has(tool.familyId)) {
+        errors.push(`tools[${index}].familyId references missing product family: ${tool.familyId}`);
+      } else if (
+        tool.familyId !== null
+        && tool.familyId !== undefined
+        && (
+          !Array.isArray(familyById.get(tool.familyId).toolIds)
+          || !familyById.get(tool.familyId).toolIds.includes(tool.id)
+        )
+      ) {
+        errors.push(`tools[${index}].familyId product family must reference tool`);
+      }
+      if (!Number.isInteger(tool.sourceId) || tool.sourceId < 0) {
+        errors.push(`tools[${index}].sourceId must be a non-negative integer`);
+      }
+      if (tool.sourceIdentifier !== `github:repository:${tool.sourceId}`) {
+        errors.push(`tools[${index}].sourceIdentifier must match sourceId`);
+      }
+      if (!isIsoTimestamp(tool.createdAt)) {
+        errors.push(`tools[${index}].createdAt must be an ISO timestamp`);
+      }
       for (const field of ["makerId", "stars", "forks", "sourceMentions", "clicks"]) {
         if (Object.hasOwn(tool, field)) errors.push(`tools[${index}].${field} must be absent in schema v2`);
       }
@@ -263,6 +457,14 @@ export function validateCatalogSnapshot(snapshot) {
         }
         if (tool.repositoryUrl !== canonical.repositoryUrl) {
           errors.push(`tools[${index}].repositoryUrl must equal canonical repository URL: ${canonical.repositoryUrl}`);
+        }
+        if (typeof tool.fullName === "string" && tool.fullName.toLowerCase() !== canonical.id) {
+          errors.push(`tools[${index}].fullName must identify the canonical repository`);
+        }
+        if (!isSafeUrl(tool.sourceUrl, "github.repositoryApi")) {
+          errors.push(`tools[${index}].sourceUrl must be a safe GitHub repository API URL`);
+        } else if (new URL(tool.sourceUrl).pathname.toLowerCase() !== `/repos/${canonical.id}`) {
+          errors.push(`tools[${index}].sourceUrl must match canonical repository`);
         }
       } catch {
         errors.push(`tools[${index}].repositoryUrl is an invalid repositoryUrl`);
@@ -294,7 +496,7 @@ export function validateCatalogSnapshot(snapshot) {
       if (relation.kind === "owner" && relation.evidenceUrl !== canonicalRepositoryByTool.get(relation.toolId)) {
         errors.push(`toolMakerRelations[${index}].evidenceUrl must match canonical tool repository URL`);
       }
-      if (relation.observedAt && !isCanonicalIsoTimestamp(relation.observedAt)) {
+      if (!isCanonicalIsoTimestamp(relation.observedAt)) {
         errors.push(`toolMakerRelations[${index}].observedAt must be an ISO timestamp`);
       }
     }
@@ -320,7 +522,16 @@ export function validateCatalogSnapshot(snapshot) {
       if (!sourceMentionNamespaces.has(mention.sourceNamespace)) {
         errors.push(`sourceMentions[${index}].sourceNamespace is unsupported: ${mention.sourceNamespace}`);
       }
-      if (mention.observedAt && !isCanonicalIsoTimestamp(mention.observedAt)) {
+      const mentionUrlUsage = mention.sourceNamespace === "ohmyfeed.editorial"
+        ? null
+        : `${mention.sourceNamespace}.item`;
+      if (mentionUrlUsage && !isSafeUrl(mention.url, mentionUrlUsage)) {
+        errors.push(`sourceMentions[${index}].url must be a safe ${mention.sourceNamespace} item URL`);
+      }
+      if (!mentionUrlUsage && mention.url !== null) {
+        errors.push(`sourceMentions[${index}].url must be null for editorial mentions`);
+      }
+      if (!isCanonicalIsoTimestamp(mention.observedAt)) {
         errors.push(`sourceMentions[${index}].observedAt must be an ISO timestamp`);
       }
     }
@@ -336,7 +547,10 @@ export function validateCatalogSnapshot(snapshot) {
         "sourceUrl",
       ]);
 
-      const expectedEntityType = metricEntityTypeByNamespace[metric.namespace];
+      const expectedEntityType = metricEntityTypeByNamespace.get(metric.namespace);
+      if (!expectedEntityType) {
+        errors.push(`metricSnapshots[${index}].namespace is an unsupported namespace: ${metric.namespace}`);
+      }
       if (!["tool", "sourceMention"].includes(metric.entityType)) {
         errors.push(`metricSnapshots[${index}].entityType is an unsupported entityType: ${metric.entityType}`);
       } else {
@@ -354,11 +568,22 @@ export function validateCatalogSnapshot(snapshot) {
           errors.push(`metricSnapshots[${index}].namespace must match source mention namespace`);
         }
       }
-      if (metric.fetchedAt && !isCanonicalIsoTimestamp(metric.fetchedAt)) {
+      if (!isCanonicalIsoTimestamp(metric.fetchedAt)) {
         errors.push(`metricSnapshots[${index}].fetchedAt must be an ISO timestamp`);
       }
+      const sourceUrlUsage = sourceUrlUsageByNamespace.get(metric.namespace);
+      if (!sourceUrlUsage || !isSafeUrl(metric.sourceUrl, sourceUrlUsage)) {
+        errors.push(`metricSnapshots[${index}].sourceUrl is invalid for namespace ${metric.namespace}`);
+      } else if (
+        metric.namespace === "github.repository"
+        && new URL(metric.sourceUrl).pathname.toLowerCase() !== `/repos/${metric.entityId}`
+      ) {
+        errors.push(`metricSnapshots[${index}].sourceUrl must match repository entityId`);
+      } else if (expectedEntityType === "sourceMention" && mentionById.get(metric.entityId)?.url !== metric.sourceUrl) {
+        errors.push(`metricSnapshots[${index}].sourceUrl must match source mention URL`);
+      }
 
-      const allowedKeys = metricKeysByNamespace[metric.namespace] ?? [];
+      const allowedKeys = metricKeysByNamespace.get(metric.namespace) ?? [];
       const actualKeys = Object.keys(metric.metrics ?? {});
       const unexpectedKeys = actualKeys.filter((key) => !allowedKeys.includes(key));
       if (unexpectedKeys.length > 0 || allowedKeys.length === 0) {

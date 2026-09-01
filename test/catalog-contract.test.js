@@ -42,14 +42,31 @@ function createContractSnapshot() {
   const tools = [
     ["dreambigou/eli5", "https://github.com/dreambigou/eli5"],
     ["someone-else/eli5", "https://github.com/someone-else/eli5"],
-  ].map(([id, repositoryUrl]) => ({
+  ].map(([id, repositoryUrl], index) => ({
     id,
     name: "ELI5",
     fullName: id,
+    description: "Explain code simply.",
+    categoryId: "coding-agents",
+    familyId: null,
     repositoryUrl,
-    sourceIdentifier: `github:repository:${id}`,
+    createdAt: fetchedAt,
+    sourceId: index + 1,
+    sourceIdentifier: `github:repository:${index + 1}`,
+    sourceUrl: `https://api.github.com/repos/${id}`,
   }));
-  const makers = ["dreambigou", "someone-else"].map((id) => ({ id, displayName: id }));
+  const makers = ["dreambigou", "someone-else"].map((id, index) => ({
+    id,
+    login: id,
+    displayName: id,
+    type: "User",
+    description: null,
+    avatarUrl: `https://avatars.githubusercontent.com/u/${index + 1}?v=4`,
+    profileUrl: `https://github.com/${id}`,
+    sourceId: index + 1,
+    sourceIdentifier: `github:user:${index + 1}`,
+    sourceUrl: `https://api.github.com/users/${id}`,
+  }));
   const toolMakerRelations = tools.map((tool, index) => ({
     id: `github.owner:${tool.id}`,
     toolId: tool.id,
@@ -110,6 +127,11 @@ function createContractSnapshot() {
   return {
     schemaVersion: 2,
     collectedAt: fetchedAt,
+    source: { provider: "GitHub REST API", apiVersion: "2022-11-28" },
+    categories: [
+      { id: "coding-agents", name: "Coding agents", description: "Tools that help with code." },
+    ],
+    productFamilies: [],
     tools,
     makers,
     toolMakerRelations,
@@ -161,10 +183,17 @@ test("schema validator derives identity from repository URLs instead of same-nam
 });
 
 test("metric snapshots require fetchedAt, non-negative integers, and namespace-specific keys", () => {
-  for (const namespace of ["geeknews", "hackernews", "producthunt"]) {
+  const sourceUrls = new Map([
+    ["geeknews", "https://news.hada.io/topic?id=42"],
+    ["hackernews", "https://news.ycombinator.com/item?id=42"],
+    ["producthunt", "https://www.producthunt.com/posts/eli5"],
+  ]);
+  for (const namespace of sourceUrls.keys()) {
     const sourceSnapshot = createContractSnapshot();
     sourceSnapshot.sourceMentions[0].sourceNamespace = namespace;
+    sourceSnapshot.sourceMentions[0].url = sourceUrls.get(namespace);
     sourceSnapshot.metricSnapshots[1].namespace = namespace;
+    sourceSnapshot.metricSnapshots[1].sourceUrl = sourceUrls.get(namespace);
     assert.deepEqual(validateCatalogSnapshot(sourceSnapshot), []);
   }
 
@@ -192,20 +221,40 @@ test("schema v1 migrates deterministically to separate contracts and projects ba
     schemaVersion: 1,
     collectedAt: fetchedAt,
     source: { provider: "GitHub REST API", apiVersion: "2022-11-28" },
+    categories: [{ id: "coding-agents", name: "Coding agents", description: "Tools that help with code." }],
+    productFamilies: [],
     tools: [
       {
         id: "dreambigou/eli5",
         name: "ELI5",
         fullName: "DreambigOu/ELI5",
+        description: "Explain code simply.",
+        categoryId: "coding-agents",
+        familyId: null,
         repositoryUrl: "https://github.com/DreambigOu/ELI5",
+        createdAt: fetchedAt,
         makerId: "dreambigou",
         stars: 10,
         forks: 2,
+        sourceId: 1,
+        sourceIdentifier: "github:repository:1",
         sourceUrl: "https://api.github.com/repos/DreambigOu/ELI5",
         sourceMentions: [{ sourceId: "m2-editorial", observedAt: fetchedAt, signals: [] }],
       },
     ],
-    makers: [{ id: "dreambigou", displayName: "Andrew Ou", toolIds: ["dreambigou/eli5"] }],
+    makers: [{
+      id: "dreambigou",
+      login: "dreambigou",
+      displayName: "Andrew Ou",
+      type: "User",
+      description: null,
+      avatarUrl: "https://avatars.githubusercontent.com/u/1?v=4",
+      profileUrl: "https://github.com/dreambigou",
+      sourceId: 1,
+      sourceIdentifier: "github:user:1",
+      sourceUrl: "https://api.github.com/users/dreambigou",
+      toolIds: ["dreambigou/eli5"],
+    }],
   };
   const before = structuredClone(legacy);
 
@@ -274,6 +323,19 @@ test("metric namespace determines entity type and must match its discovery menti
   assert.ok(validateCatalogSnapshot(unknownEntityType).some((error) => error.includes("unsupported entityType")));
 });
 
+test("prototype-key metric namespaces fail closed with validation errors", () => {
+  for (const namespace of ["toString", "__proto__", "constructor"]) {
+    const snapshot = createContractSnapshot();
+    snapshot.metricSnapshots[0].namespace = namespace;
+
+    assert.doesNotThrow(() => validateCatalogSnapshot(snapshot));
+    assert.ok(
+      validateCatalogSnapshot(snapshot).some((error) => error.includes(`unsupported namespace: ${namespace}`)),
+      `expected ${namespace} to be rejected`,
+    );
+  }
+});
+
 test("every canonical tool requires exactly one owner relation and a GitHub metric snapshot", () => {
   const noOwner = createContractSnapshot();
   noOwner.toolMakerRelations.shift();
@@ -311,6 +373,81 @@ test("schema validator requires contract fields and a valid fetchedAt instant", 
   assert.ok(validateCatalogSnapshot(invalidTime).some((error) => error.includes("fetchedAt must be an ISO timestamp")));
 });
 
+test("schema validator requires every field and collection consumed by the M2 UI", () => {
+  const cases = [
+    ["source", (snapshot) => delete snapshot.source],
+    ["collectedAt", (snapshot) => delete snapshot.collectedAt],
+    ["categories", (snapshot) => delete snapshot.categories],
+    ["productFamilies", (snapshot) => delete snapshot.productFamilies],
+    ["tools[0].fullName", (snapshot) => delete snapshot.tools[0].fullName],
+    ["tools[0].description", (snapshot) => delete snapshot.tools[0].description],
+    ["tools[0].categoryId", (snapshot) => delete snapshot.tools[0].categoryId],
+    ["tools[0].createdAt", (snapshot) => delete snapshot.tools[0].createdAt],
+    ["tools[0].sourceIdentifier", (snapshot) => delete snapshot.tools[0].sourceIdentifier],
+    ["makers[0].login", (snapshot) => delete snapshot.makers[0].login],
+    ["makers[0].type", (snapshot) => delete snapshot.makers[0].type],
+    ["makers[0].avatarUrl", (snapshot) => delete snapshot.makers[0].avatarUrl],
+    ["makers[0].profileUrl", (snapshot) => delete snapshot.makers[0].profileUrl],
+    ["makers[0].sourceIdentifier", (snapshot) => delete snapshot.makers[0].sourceIdentifier],
+  ];
+
+  for (const [path, mutate] of cases) {
+    const snapshot = createContractSnapshot();
+    mutate(snapshot);
+    const errors = validateCatalogSnapshot(snapshot);
+    assert.ok(errors.some((error) => error.includes(path)), `expected missing ${path} to be rejected`);
+  }
+});
+
+test("schema validator rejects dangling category and product-family relationships", () => {
+  const badCategory = createContractSnapshot();
+  badCategory.tools[0].categoryId = "missing-category";
+  assert.ok(validateCatalogSnapshot(badCategory).some((error) => error.includes("categoryId references missing category")));
+
+  const missingFamilyField = createContractSnapshot();
+  delete missingFamilyField.tools[0].familyId;
+  assert.ok(validateCatalogSnapshot(missingFamilyField).some((error) => error.includes("tools[0].familyId")));
+
+  const badFamily = createContractSnapshot();
+  badFamily.productFamilies.push({
+    id: "eli5-family",
+    name: "ELI5 family",
+    makerId: "missing-maker",
+    toolIds: ["missing/tool"],
+    relationKind: "editorial_relation",
+    evidenceUrls: ["https://github.com/dreambigou/eli5"],
+    observedAt: "2026-09-01T00:00:00.000Z",
+  });
+  badFamily.tools[0].familyId = "eli5-family";
+  const errors = validateCatalogSnapshot(badFamily);
+  assert.ok(errors.some((error) => error.includes("makerId references missing maker")));
+  assert.ok(errors.some((error) => error.includes("toolIds[0] references missing tool")));
+
+  const inverseMismatch = createContractSnapshot();
+  inverseMismatch.productFamilies.push({
+    id: "eli5-family",
+    name: "ELI5 family",
+    makerId: "dreambigou",
+    toolIds: ["dreambigou/eli5"],
+    relationKind: "editorial_relation",
+    evidenceUrls: ["https://github.com/dreambigou/eli5"],
+    observedAt: "2026-09-01T00:00:00.000Z",
+  });
+  assert.ok(validateCatalogSnapshot(inverseMismatch).some((error) => error.includes("familyId must match product family")));
+});
+
+test("GitHub source identifiers are unique within each canonical entity collection", () => {
+  for (const collection of ["tools", "makers"]) {
+    const snapshot = createContractSnapshot();
+    snapshot[collection][1].sourceId = snapshot[collection][0].sourceId;
+    snapshot[collection][1].sourceIdentifier = snapshot[collection][0].sourceIdentifier;
+    assert.ok(
+      validateCatalogSnapshot(snapshot).some((error) => error.includes(`${collection} has duplicate sourceIdentifier`)),
+      `expected duplicate ${collection} sourceIdentifier to be rejected`,
+    );
+  }
+});
+
 test("runtime UI projection rejects invalid snapshots instead of rendering them", () => {
   const invalid = createContractSnapshot();
   invalid.metricSnapshots[0].metrics.stars = -1;
@@ -319,14 +456,29 @@ test("runtime UI projection rejects invalid snapshots instead of rendering them"
 
 test("v1 migration rejects canonical ID collisions and normalizes persisted repository URLs", () => {
   const fetchedAt = "2026-09-01T00:00:00.000Z";
+  const contract = createContractSnapshot();
   const collision = {
+    ...contract,
     schemaVersion: 1,
-    collectedAt: fetchedAt,
-    tools: [
-      { id: "first", name: "Repo", fullName: "Owner/Repo", repositoryUrl: "https://github.com/Owner/Repo", makerId: "owner", stars: 1, forks: 0, sourceUrl: "https://api.github.com/repos/Owner/Repo" },
-      { id: "second", name: "Repo", fullName: "owner/repo", repositoryUrl: "https://github.com/owner/repo.git/", makerId: "owner", stars: 2, forks: 0, sourceUrl: "https://api.github.com/repos/owner/repo" },
-    ],
-    makers: [{ id: "owner", displayName: "Owner", toolIds: ["first", "second"] }],
+    tools: contract.tools.map((tool, index) => ({
+      ...tool,
+      id: index === 0 ? "first" : "second",
+      fullName: index === 0 ? "Owner/Repo" : "owner/repo",
+      repositoryUrl: index === 0 ? "https://github.com/Owner/Repo" : "https://github.com/owner/repo.git/",
+      makerId: "owner",
+      stars: index + 1,
+      forks: 0,
+      sourceUrl: "https://api.github.com/repos/owner/repo",
+      sourceMentions: [],
+    })),
+    makers: [{
+      ...contract.makers[0],
+      id: "owner",
+      login: "owner",
+      profileUrl: "https://github.com/owner",
+      sourceUrl: "https://api.github.com/users/owner",
+      toolIds: ["first", "second"],
+    }],
   };
   assert.throws(() => migrateCatalogSnapshot(collision), /duplicate id/);
 
@@ -359,6 +511,15 @@ test("all contract timestamps use canonical ISO instants", () => {
   assert.ok(errors.some((error) => error.includes("toolMakerRelations[0].observedAt must be an ISO timestamp")));
   assert.ok(errors.some((error) => error.includes("sourceMentions[0].observedAt must be an ISO timestamp")));
   assert.ok(errors.some((error) => error.includes("metricSnapshots[0].fetchedAt must be an ISO timestamp")));
+
+  const falsy = createContractSnapshot();
+  falsy.toolMakerRelations[0].observedAt = false;
+  falsy.sourceMentions[0].observedAt = 0;
+  falsy.metricSnapshots[0].fetchedAt = false;
+  const falsyErrors = validateCatalogSnapshot(falsy);
+  assert.ok(falsyErrors.some((error) => error.includes("toolMakerRelations[0].observedAt must be an ISO timestamp")));
+  assert.ok(falsyErrors.some((error) => error.includes("sourceMentions[0].observedAt must be an ISO timestamp")));
+  assert.ok(falsyErrors.some((error) => error.includes("metricSnapshots[0].fetchedAt must be an ISO timestamp")));
 });
 
 test("wrong collection types return validation errors instead of throwing", () => {
@@ -387,4 +548,24 @@ test("GitHub owner evidence must be the canonical URL of the related repository"
   const unrelatedRepository = createContractSnapshot();
   unrelatedRepository.toolMakerRelations[0].evidenceUrl = "https://github.com/someone-else/eli5";
   assert.ok(validateCatalogSnapshot(unrelatedRepository).some((error) => error.includes("evidenceUrl must match canonical tool repository URL")));
+});
+
+test("schema validator rejects unsafe and spoofed URLs in every source-backed path", () => {
+  const cases = [
+    ["tools[0].sourceUrl", (snapshot) => { snapshot.tools[0].sourceUrl = "javascript:alert(1)"; }],
+    ["makers[0].profileUrl", (snapshot) => { snapshot.makers[0].profileUrl = "https://github.com.evil.example/dreambigou"; }],
+    ["makers[0].avatarUrl", (snapshot) => { snapshot.makers[0].avatarUrl = "https://evil.example/avatar.png"; }],
+    ["makers[0].sourceUrl", (snapshot) => { snapshot.makers[0].sourceUrl = "not-a-url"; }],
+    ["sourceMentions[0].url", (snapshot) => { snapshot.sourceMentions[0].url = "javascript:alert(1)"; }],
+    ["metricSnapshots[0].sourceUrl", (snapshot) => { snapshot.metricSnapshots[0].sourceUrl = "https://api.github.com.evil.example/repos/dreambigou/eli5"; }],
+  ];
+
+  for (const [path, mutate] of cases) {
+    const snapshot = createContractSnapshot();
+    mutate(snapshot);
+    assert.ok(
+      validateCatalogSnapshot(snapshot).some((error) => error.includes(path)),
+      `expected unsafe ${path} to be rejected`,
+    );
+  }
 });

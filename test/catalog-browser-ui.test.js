@@ -83,3 +83,39 @@ test("production UI synchronizes tabs, related links, and browser history with t
     await window.happyDOM.close();
   }
 });
+
+test("production UI rejects malformed snapshots without rendering unsafe destinations", async () => {
+  const malicious = structuredClone(snapshot);
+  malicious.makers[0].profileUrl = "javascript:alert(1)";
+  malicious.makers[0].avatarUrl = "https://evil.example/avatar.png";
+
+  const window = new Window({ url: "https://discover.ohmyfeed.stream/" });
+  window.document.write(html);
+  window.fetch = async () => ({ ok: true, json: async () => malicious });
+
+  const previous = new Map();
+  for (const [name, value] of Object.entries({
+    window,
+    document: window.document,
+    location: window.location,
+    history: window.history,
+    fetch: window.fetch,
+    requestAnimationFrame: (callback) => { callback(); return 1; },
+  })) {
+    previous.set(name, globalThis[name]);
+    globalThis[name] = value;
+  }
+
+  try {
+    await assert.doesNotReject(() => import(`../public/app.js?unsafe-browser-ui=${Date.now()}`));
+    assert.match(window.document.querySelector("#catalog-list").textContent, /could not be loaded/i);
+    assert.equal(window.document.querySelector('a[href^="javascript:"]'), null);
+    assert.equal(window.document.querySelector('img[src^="https://evil.example"]'), null);
+  } finally {
+    for (const [name, value] of previous) {
+      if (value === undefined) delete globalThis[name];
+      else globalThis[name] = value;
+    }
+    await window.happyDOM.close();
+  }
+});

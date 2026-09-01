@@ -8,6 +8,7 @@ import {
   visibleBrowseItems,
   visibleTodayItems,
 } from "./src/domain.js";
+import { safeHref } from "./public/url-safety.js";
 
 const [data, liveFeed] = await Promise.all([
   fetchJson("./mock/demo-data.json"),
@@ -222,7 +223,7 @@ function personalizedDetailTemplate(item) {
 function commonActionsTemplate(item, personalized) {
   const link = session.projectLinks[item.id];
   return `<div class="action-bar">
-    <a class="button" href="${encodeURI(item.url)}" target="_blank" rel="noreferrer">원문 열기</a>
+    <a class="button" href="${escapeHtml(safeHref(item.url, "feed.article"))}" target="_blank" rel="noreferrer">원문 열기</a>
     <button class="button" type="button" data-action="save">${item.humanState.saved ? "저장 취소" : "저장"}</button>
     ${personalized ? `<button class="button primary" type="button" data-action="link" ${link ? "disabled" : ""}>${link ? "Orbit에 연결됨" : "Orbit에 연결"}</button>` : ""}
     <button class="button danger" type="button" data-action="hide">숨김</button>

@@ -1,4 +1,5 @@
 import { createCatalogView, sortCatalog } from "./catalog.js";
+import { safeHref } from "./url-safety.js";
 
 document.documentElement.classList.add("js");
 enableCloudflareWebAnalytics();
@@ -165,7 +166,7 @@ function toolTemplate(tool, rank) {
     <span class="rank" aria-label="Rank ${rank}">${rank}.</span>
     <div class="row-main">
       <div class="title-line">
-        <a class="item-title" href="${safeHref(tool.repositoryUrl)}" target="_blank" rel="noreferrer">${escapeHtml(tool.name)}</a>
+        <a class="item-title" href="${escapeHtml(safeHref(tool.repositoryUrl, "github.repository"))}" target="_blank" rel="noreferrer">${escapeHtml(tool.name)}</a>
         <span class="host">(${escapeHtml(tool.fullName)})</span>
       </div>
       <p>${escapeHtml(tool.description)}</p>
@@ -196,9 +197,9 @@ function makerTemplate(maker, rank) {
     .filter(Boolean);
   return `<article class="catalog-row person-row" id="maker-${escapeHtml(maker.id)}" tabindex="-1" data-source-id="${escapeHtml(maker.sourceIdentifier)}">
     <span class="rank" aria-label="Row ${rank}">${rank}.</span>
-    <img src="${safeHref(maker.avatarUrl)}" alt="" width="42" height="42" loading="lazy" />
+    <img src="${escapeHtml(safeHref(maker.avatarUrl, "github.avatar"))}" alt="" width="42" height="42" loading="lazy" />
     <div class="row-main">
-      <div class="title-line"><a class="item-title" href="${safeHref(maker.profileUrl)}" target="_blank" rel="noreferrer">${escapeHtml(maker.displayName)}</a><span class="host">(@${escapeHtml(maker.login)} · ${escapeHtml(maker.type)})</span></div>
+      <div class="title-line"><a class="item-title" href="${escapeHtml(safeHref(maker.profileUrl, "github.profile"))}" target="_blank" rel="noreferrer">${escapeHtml(maker.displayName)}</a><span class="host">(@${escapeHtml(maker.login)} · ${escapeHtml(maker.type)})</span></div>
       <p>${escapeHtml(maker.description || "GitHub profile")}</p>
       <div class="row-links">${tools.map((tool) => `<a href="#tool-${slugId(tool.id)}" data-open-tool="${escapeHtml(tool.id)}">${escapeHtml(tool.name)}</a>`).join("")}</div>
     </div>
@@ -234,11 +235,6 @@ function enableCloudflareWebAnalytics() {
 
 function slugId(value) {
   return value.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-").replaceAll(/^-|-$/g, "");
-}
-
-function safeHref(value) {
-  const url = new URL(value);
-  return url.protocol === "https:" ? escapeHtml(url.href) : "#";
 }
 
 function formatNumber(value) {
