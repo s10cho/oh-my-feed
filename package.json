@@ -6,13 +6,15 @@
   "scripts": {
     "start": "npm run build:metadata && wrangler dev",
     "refresh:feeds": "node scripts/fetch-feeds.mjs",
+    "refresh:catalog": "node scripts/fetch-catalog.mjs",
     "build:metadata": "node scripts/generate-build-metadata.mjs",
     "test": "npm run build:metadata && node --test",
-    "check": "npm run build:metadata && node --check app.js && node --check src/domain.js && node --check src/worker.js && node --check scripts/fetch-feeds.mjs && node --check scripts/generate-build-metadata.mjs && node --test",
+    "check": "npm run build:metadata && node --check app.js && node --check public/app.js && node --check public/catalog.js && node --check src/domain.js && node --check src/worker.js && node --check scripts/fetch-feeds.mjs && node --check scripts/fetch-catalog.mjs && node --check scripts/generate-build-metadata.mjs && node --test",
     "build": "npm run build:metadata && wrangler deploy --dry-run",
     "deploy:dry-run": "npm run build"
   },
   "devDependencies": {
+    "happy-dom": "^20.12.0",
     "wrangler": "4.127.1"
   }
 }

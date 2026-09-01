@@ -1,0 +1,490 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": "2026-09-01T13:37:31.399Z",
+  "source": {
+    "provider": "GitHub REST API",
+    "apiVersion": "2022-11-28",
+    "repositoryEndpoint": "https://api.github.com/repos/{owner}/{repo}",
+    "userEndpoint": "https://api.github.com/users/{login}",
+    "provenance": "Repository metrics and profile fields are copied from official GitHub API responses without modification. Category assignments and the bounded sample selection are manual editorial metadata, not AI classification."
+  },
+  "clicks": {
+    "status": "not_collected",
+    "label": "Clicks not collected yet"
+  },
+  "rankingSemantics": {
+    "hot": {
+      "status": "not_calculated",
+      "label": "Hot is not available yet"
+    },
+    "popular": {
+      "metric": "stargazers_count",
+      "label": "Popular = GitHub stars"
+    },
+    "newest": {
+      "metric": "created_at",
+      "label": "Newest = repository creation date"
+    }
+  },
+  "discoverySources": [
+    {
+      "id": "m2-editorial",
+      "label": "M2 manual catalog seed",
+      "kind": "editorial_selection"
+    }
+  ],
+  "productFamilies": [
+    {
+      "id": "yeachan-heo-oh-my-code",
+      "name": "Yeachan-Heo's Oh My Code family",
+      "makerId": "yeachan-heo",
+      "toolIds": [
+        "yeachan-heo/oh-my-claudecode",
+        "yeachan-heo/oh-my-codex"
+      ],
+      "relationKind": "editorial_relation",
+      "observedAt": "2026-09-01T13:37:31.399Z",
+      "evidenceUrls": [
+        "https://github.com/Yeachan-Heo/oh-my-codex/blob/main/COVERAGE.md",
+        "https://github.com/Yeachan-Heo/oh-my-claudecode"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "id": "coding-agents",
+      "name": "Coding agents",
+      "description": "Tools that help developers write, understand, and change code."
+    },
+    {
+      "id": "agent-skills",
+      "name": "Agent skills",
+      "description": "Reusable workflows and specialist capabilities for coding agents."
+    },
+    {
+      "id": "developer-tools",
+      "name": "Developer tools",
+      "description": "Utilities for understanding and operating AI-assisted development."
+    },
+    {
+      "id": "knowledge-data",
+      "name": "Knowledge & data",
+      "description": "Tools that connect models to private data and retrieval pipelines."
+    },
+    {
+      "id": "browser-automation",
+      "name": "Browser automation",
+      "description": "Tools that let agents observe and act in web browsers."
+    }
+  ],
+  "tools": [
+    {
+      "id": "browser-use/browser-use",
+      "name": "browser-use",
+      "fullName": "browser-use/browser-use",
+      "description": "🌐 Make websites accessible for AI agents. Automate tasks online with ease.",
+      "categoryId": "browser-automation",
+      "makerId": "browser-use",
+      "familyId": null,
+      "repositoryUrl": "https://github.com/browser-use/browser-use",
+      "homepage": "https://browser-use.com",
+      "stars": 111929,
+      "forks": 12297,
+      "language": "Python",
+      "license": "MIT",
+      "topics": [
+        "ai-agents",
+        "ai-tools",
+        "browser-automation",
+        "browser-use",
+        "llm",
+        "playwright",
+        "python"
+      ],
+      "createdAt": "2024-10-31T16:00:56Z",
+      "updatedAt": "2026-09-01T13:36:24Z",
+      "pushedAt": "2026-09-01T00:37:36Z",
+      "sourceId": 881458615,
+      "sourceIdentifier": "github:repository:881458615",
+      "sourceUrl": "https://api.github.com/repos/browser-use/browser-use",
+      "sourceMentions": [
+        {
+          "sourceId": "m2-editorial",
+          "observedAt": "2026-09-01T13:37:31.399Z",
+          "signals": []
+        }
+      ]
+    },
+    {
+      "id": "code-yeongyu/oh-my-openagent",
+      "name": "oh-my-openagent",
+      "fullName": "code-yeongyu/oh-my-openagent",
+      "description": "omo/lazycodex: The coding agent for tokenmaxxers;the one and only agent harness for complex codebases. For your Codex, for your OpenCode",
+      "categoryId": "coding-agents",
+      "makerId": "code-yeongyu",
+      "familyId": null,
+      "repositoryUrl": "https://github.com/code-yeongyu/oh-my-openagent",
+      "homepage": "https://omo.dev",
+      "stars": 68582,
+      "forks": 5630,
+      "language": "TypeScript",
+      "license": "NOASSERTION",
+      "topics": [
+        "ai",
+        "ai-agents",
+        "anthropic",
+        "chatgpt",
+        "claude",
+        "claude-skills",
+        "codex",
+        "cursor",
+        "gemini",
+        "ide",
+        "openai",
+        "opencode",
+        "orchestration",
+        "tui",
+        "typescript"
+      ],
+      "createdAt": "2025-12-03T01:40:05Z",
+      "updatedAt": "2026-09-01T13:36:41Z",
+      "pushedAt": "2026-09-01T13:34:49Z",
+      "sourceId": 1108837393,
+      "sourceIdentifier": "github:repository:1108837393",
+      "sourceUrl": "https://api.github.com/repos/code-yeongyu/oh-my-openagent",
+      "sourceMentions": [
+        {
+          "sourceId": "m2-editorial",
+          "observedAt": "2026-09-01T13:37:31.399Z",
+          "signals": []
+        }
+      ]
+    },
+    {
+      "id": "continuedev/continue",
+      "name": "continue",
+      "fullName": "continuedev/continue",
+      "description": "open-source coding agent",
+      "categoryId": "coding-agents",
+      "makerId": "continuedev",
+      "familyId": null,
+      "repositoryUrl": "https://github.com/continuedev/continue",
+      "homepage": "https://continue.dev",
+      "stars": 35723,
+      "forks": 5319,
+      "language": "TypeScript",
+      "license": "Apache-2.0",
+      "topics": [
+        "agent",
+        "ai",
+        "cli",
+        "developer-tools",
+        "open-source"
+      ],
+      "createdAt": "2023-05-24T03:39:39Z",
+      "updatedAt": "2026-09-01T13:33:09Z",
+      "pushedAt": "2026-09-01T09:52:30Z",
+      "sourceId": 644686905,
+      "sourceIdentifier": "github:repository:644686905",
+      "sourceUrl": "https://api.github.com/repos/continuedev/continue",
+      "sourceMentions": [
+        {
+          "sourceId": "m2-editorial",
+          "observedAt": "2026-09-01T13:37:31.399Z",
+          "signals": []
+        }
+      ]
+    },
+    {
+      "id": "dreambigou/eli5",
+      "name": "ELI5",
+      "fullName": "DreambigOu/ELI5",
+      "description": "ELI5 — A Claude Code skill that explains anything to anyone: kids, managers, engineers, parents. Adapts tone, vocabulary, and analogies to match the audience.",
+      "categoryId": "agent-skills",
+      "makerId": "dreambigou",
+      "familyId": null,
+      "repositoryUrl": "https://github.com/DreambigOu/ELI5",
+      "homepage": "https://andrewou.pages.dev/posts/building-an-eli5-skill-for-claude/",
+      "stars": 769,
+      "forks": 31,
+      "language": "Python",
+      "license": "MIT",
+      "topics": [
+        "ai-skill",
+        "anthropic",
+        "claude",
+        "claude-code",
+        "claude-skill",
+        "education",
+        "eli5",
+        "explain-like-im-5",
+        "llm",
+        "prompt-engineering"
+      ],
+      "createdAt": "2026-03-17T02:15:34Z",
+      "updatedAt": "2026-09-01T13:29:14Z",
+      "pushedAt": "2026-03-18T03:35:25Z",
+      "sourceId": 1183845721,
+      "sourceIdentifier": "github:repository:1183845721",
+      "sourceUrl": "https://api.github.com/repos/DreambigOu/ELI5",
+      "sourceMentions": [
+        {
+          "sourceId": "m2-editorial",
+          "observedAt": "2026-09-01T13:37:31.399Z",
+          "signals": []
+        }
+      ]
+    },
+    {
+      "id": "garrytan/gbrain",
+      "name": "gbrain",
+      "fullName": "garrytan/gbrain",
+      "description": "Garry's Opinionated OpenClaw/Hermes Agent Brain",
+      "categoryId": "knowledge-data",
+      "makerId": "garrytan",
+      "familyId": null,
+      "repositoryUrl": "https://github.com/garrytan/gbrain",
+      "homepage": null,
+      "stars": 29416,
+      "forks": 4386,
+      "language": "TypeScript",
+      "license": "MIT",
+      "topics": [],
+      "createdAt": "2026-04-05T14:40:56Z",
+      "updatedAt": "2026-09-01T13:36:06Z",
+      "pushedAt": "2026-09-01T08:38:19Z",
+      "sourceId": 1202057891,
+      "sourceIdentifier": "github:repository:1202057891",
+      "sourceUrl": "https://api.github.com/repos/garrytan/gbrain",
+      "sourceMentions": [
+        {
+          "sourceId": "m2-editorial",
+          "observedAt": "2026-09-01T13:37:31.399Z",
+          "signals": []
+        }
+      ]
+    },
+    {
+      "id": "garrytan/gstack",
+      "name": "gstack",
+      "fullName": "garrytan/gstack",
+      "description": "Use Garry Tan's exact Claude Code setup: 23 opinionated tools that serve as CEO, Designer, Eng Manager, Release Manager, Doc Engineer, and QA",
+      "categoryId": "agent-skills",
+      "makerId": "garrytan",
+      "familyId": null,
+      "repositoryUrl": "https://github.com/garrytan/gstack",
+      "homepage": null,
+      "stars": 130730,
+      "forks": 19650,
+      "language": "TypeScript",
+      "license": "MIT",
+      "topics": [],
+      "createdAt": "2026-03-11T21:22:45Z",
+      "updatedAt": "2026-09-01T13:36:16Z",
+      "pushedAt": "2026-09-01T01:10:48Z",
+      "sourceId": 1179264259,
+      "sourceIdentifier": "github:repository:1179264259",
+      "sourceUrl": "https://api.github.com/repos/garrytan/gstack",
+      "sourceMentions": [
+        {
+          "sourceId": "m2-editorial",
+          "observedAt": "2026-09-01T13:37:31.399Z",
+          "signals": []
+        }
+      ]
+    },
+    {
+      "id": "yeachan-heo/oh-my-claudecode",
+      "name": "oh-my-claudecode",
+      "fullName": "Yeachan-Heo/oh-my-claudecode",
+      "description": "Teams-first Multi-agent orchestration for Claude Code",
+      "categoryId": "coding-agents",
+      "makerId": "yeachan-heo",
+      "familyId": "yeachan-heo-oh-my-code",
+      "repositoryUrl": "https://github.com/Yeachan-Heo/oh-my-claudecode",
+      "homepage": "https://oh-my-claudecode.dev",
+      "stars": 38929,
+      "forks": 3492,
+      "language": "TypeScript",
+      "license": "MIT",
+      "topics": [
+        "agentic-coding",
+        "ai-agents",
+        "automation",
+        "claude",
+        "claude-code",
+        "multi-agent-systems",
+        "oh-my-opencode",
+        "opencode",
+        "parallel-execution",
+        "vibe-coding"
+      ],
+      "createdAt": "2026-01-09T03:36:29Z",
+      "updatedAt": "2026-09-01T13:32:11Z",
+      "pushedAt": "2026-09-01T09:34:10Z",
+      "sourceId": 1130809465,
+      "sourceIdentifier": "github:repository:1130809465",
+      "sourceUrl": "https://api.github.com/repos/Yeachan-Heo/oh-my-claudecode",
+      "sourceMentions": [
+        {
+          "sourceId": "m2-editorial",
+          "observedAt": "2026-09-01T13:37:31.399Z",
+          "signals": []
+        }
+      ]
+    },
+    {
+      "id": "yeachan-heo/oh-my-codex",
+      "name": "oh-my-codex",
+      "fullName": "Yeachan-Heo/oh-my-codex",
+      "description": "OmX - Oh My codeX: Your codex is not alone. Add hooks, agent teams, HUDs, and so much more.",
+      "categoryId": "coding-agents",
+      "makerId": "yeachan-heo",
+      "familyId": "yeachan-heo-oh-my-code",
+      "repositoryUrl": "https://github.com/Yeachan-Heo/oh-my-codex",
+      "homepage": "https://oh-my-codex.dev",
+      "stars": 32943,
+      "forks": 2534,
+      "language": "TypeScript",
+      "license": null,
+      "topics": [],
+      "createdAt": "2026-02-02T14:21:18Z",
+      "updatedAt": "2026-09-01T13:34:15Z",
+      "pushedAt": "2026-09-01T06:50:52Z",
+      "sourceId": 1148052330,
+      "sourceIdentifier": "github:repository:1148052330",
+      "sourceUrl": "https://api.github.com/repos/Yeachan-Heo/oh-my-codex",
+      "sourceMentions": [
+        {
+          "sourceId": "m2-editorial",
+          "observedAt": "2026-09-01T13:37:31.399Z",
+          "signals": []
+        }
+      ]
+    },
+    {
+      "id": "yeachan-heo/tokscale",
+      "name": "tokscale",
+      "fullName": "Yeachan-Heo/tokscale",
+      "description": "🛰️ A CLI tool for tracking token usage from OpenCode/Claude Code/Codex/Gemini CLI/Cursor IDE • Generate Your Wrapped 2025 🎉",
+      "categoryId": "developer-tools",
+      "makerId": "yeachan-heo",
+      "familyId": null,
+      "repositoryUrl": "https://github.com/Yeachan-Heo/tokscale",
+      "homepage": "https://tokscale.ai",
+      "stars": 20,
+      "forks": 4,
+      "language": null,
+      "license": "MIT",
+      "topics": [],
+      "createdAt": "2025-12-27T07:29:32Z",
+      "updatedAt": "2026-08-20T16:01:26Z",
+      "pushedAt": "2026-03-14T20:13:32Z",
+      "sourceId": 1123589266,
+      "sourceIdentifier": "github:repository:1123589266",
+      "sourceUrl": "https://api.github.com/repos/Yeachan-Heo/tokscale",
+      "sourceMentions": [
+        {
+          "sourceId": "m2-editorial",
+          "observedAt": "2026-09-01T13:37:31.399Z",
+          "signals": []
+        }
+      ]
+    }
+  ],
+  "makers": [
+    {
+      "id": "browser-use",
+      "login": "browser-use",
+      "displayName": "Browser Use",
+      "type": "Organization",
+      "description": null,
+      "avatarUrl": "https://avatars.githubusercontent.com/u/192012301?v=4",
+      "profileUrl": "https://github.com/browser-use",
+      "sourceId": 192012301,
+      "sourceIdentifier": "github:user:192012301",
+      "sourceUrl": "https://api.github.com/users/browser-use",
+      "toolIds": [
+        "browser-use/browser-use"
+      ]
+    },
+    {
+      "id": "code-yeongyu",
+      "login": "code-yeongyu",
+      "displayName": "YeonGyu-Kim",
+      "type": "User",
+      "description": "Hacker.",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/11153873?v=4",
+      "profileUrl": "https://github.com/code-yeongyu",
+      "sourceId": 11153873,
+      "sourceIdentifier": "github:user:11153873",
+      "sourceUrl": "https://api.github.com/users/code-yeongyu",
+      "toolIds": [
+        "code-yeongyu/oh-my-openagent"
+      ]
+    },
+    {
+      "id": "continuedev",
+      "login": "continuedev",
+      "displayName": "Continue",
+      "type": "Organization",
+      "description": "Pioneering open-source coding agent",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/127876214?v=4",
+      "profileUrl": "https://github.com/continuedev",
+      "sourceId": 127876214,
+      "sourceIdentifier": "github:user:127876214",
+      "sourceUrl": "https://api.github.com/users/continuedev",
+      "toolIds": [
+        "continuedev/continue"
+      ]
+    },
+    {
+      "id": "dreambigou",
+      "login": "DreambigOu",
+      "displayName": "Andrew Ou",
+      "type": "User",
+      "description": null,
+      "avatarUrl": "https://avatars.githubusercontent.com/u/1847166?v=4",
+      "profileUrl": "https://github.com/DreambigOu",
+      "sourceId": 1847166,
+      "sourceIdentifier": "github:user:1847166",
+      "sourceUrl": "https://api.github.com/users/DreambigOu",
+      "toolIds": [
+        "dreambigou/eli5"
+      ]
+    },
+    {
+      "id": "garrytan",
+      "login": "garrytan",
+      "displayName": "Garry Tan",
+      "type": "User",
+      "description": "Writes software, dreams. ",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/19957?v=4",
+      "profileUrl": "https://github.com/garrytan",
+      "sourceId": 19957,
+      "sourceIdentifier": "github:user:19957",
+      "sourceUrl": "https://api.github.com/users/garrytan",
+      "toolIds": [
+        "garrytan/gbrain",
+        "garrytan/gstack"
+      ]
+    },
+    {
+      "id": "yeachan-heo",
+      "login": "Yeachan-Heo",
+      "displayName": "Bellman",
+      "type": "User",
+      "description": "Dedicated Algorithmic Trader\r\n\r\nLeader of Quant.start() - Korea's biggest Quant Trading Community\r\n",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/54757707?v=4",
+      "profileUrl": "https://github.com/Yeachan-Heo",
+      "sourceId": 54757707,
+      "sourceIdentifier": "github:user:54757707",
+      "sourceUrl": "https://api.github.com/users/Yeachan-Heo",
+      "toolIds": [
+        "yeachan-heo/oh-my-claudecode",
+        "yeachan-heo/oh-my-codex",
+        "yeachan-heo/tokscale"
+      ]
+    }
+  ]
+}

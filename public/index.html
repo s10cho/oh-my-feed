@@ -5,18 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Oh My Feed Discover is an early public experiment for discovering AI tools and the people behind them."
+      content="Discover useful AI tools and the people and organizations behind them through a small, traceable GitHub catalog."
     />
-    <title>Oh My Feed Discover</title>
+    <meta name="cf-web-analytics-token" content="" />
+    <title>Oh My Feed Discover — AI tools and makers</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <main>
-      <p class="eyebrow">OH MY FEED · EARLY EXPERIMENT</p>
-      <h1>Oh My Feed Discover</h1>
-      <p class="summary">A public experiment for discovering AI tools and the people who make and maintain them.</p>
-      <p class="variant">Variant B · Discover</p>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#top" aria-label="Oh My Feed Discover home"><span>OMF</span> Discover</a>
+        <nav class="tabs" role="tablist" aria-label="Catalog views">
+          <button id="tab-tools" role="tab" aria-controls="catalog-panel" aria-selected="true" data-view="tools" type="button">Tools</button>
+          <button id="tab-people" role="tab" aria-controls="catalog-panel" aria-selected="false" data-view="people" type="button">People</button>
+          <button id="tab-categories" role="tab" aria-controls="catalog-panel" aria-selected="false" data-view="categories" type="button">Categories</button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top" class="page-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">A SMALL, VERIFIED DISCOVERY CATALOG</p>
+          <h1 id="page-title">Find AI tools.<br />Follow their makers.</h1>
+          <p class="lede">Discover AI tools and the people and organizations behind them—from emerging agent skills to the builders shaping how AI software gets made.</p>
+        </div>
+        <dl class="snapshot-summary" aria-label="Catalog snapshot summary">
+          <div><dt>Tools</dt><dd id="tool-count">—</dd></div>
+          <div><dt>People & orgs</dt><dd id="maker-count">—</dd></div>
+          <div><dt>Source</dt><dd>GitHub API snapshot</dd></div>
+        </dl>
+      </section>
+
+      <section id="catalog-panel" class="catalog" role="tabpanel" aria-labelledby="tab-tools catalog-title">
+        <div class="catalog-toolbar">
+          <div>
+            <p class="eyebrow">DISCOVER</p>
+            <h2 id="catalog-title">Tools</h2>
+          </div>
+          <div class="sort-controls" id="sort-controls" aria-label="Sort tools">
+            <span>Sort</span>
+            <button class="active" data-sort="popular" type="button" aria-pressed="true">Popular</button>
+            <button data-sort="newest" type="button" aria-pressed="false">Newest</button>
+          </div>
+        </div>
+        <p class="measurement-note" id="measurement-note">Popular = GitHub stars · Newest = repository creation date · Hot is not available yet · Clicks not collected yet</p>
+        <div id="catalog-list" class="catalog-list" aria-live="polite" aria-busy="true">
+          <p class="loading">Loading the verified catalog…</p>
+        </div>
+      </section>
+
+      <footer class="provenance" id="provenance">
+        <p>Official GitHub API snapshot. Metrics are source values; categories are manual editorial labels, not AI classification.</p>
+        <p id="snapshot-time">Collection time loading…</p>
+      </footer>
     </main>
+
     <script type="module" src="/app.js"></script>
   </body>
 </html>
