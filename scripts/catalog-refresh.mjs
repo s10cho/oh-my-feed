@@ -179,22 +179,29 @@ export async function writeCatalogSnapshotAtomically(snapshot, destination, {
   io = defaultIo,
   nonce = randomUUID,
 } = {}) {
-  const errors = validateCatalogSnapshot(snapshot);
+  const serialized = `${JSON.stringify(snapshot, null, 2)}\n`;
+  const serializedSnapshot = JSON.parse(serialized);
+  const errors = validateCatalogSnapshot(serializedSnapshot);
   if (errors.length > 0) throw new Error(`Invalid catalog snapshot: ${errors.join("; ")}`);
 
   const target = destination instanceof URL ? fileURLToPath(destination) : destination;
   const temporary = join(dirname(target), `.${basename(target)}.${nonce()}.tmp`);
-  let temporaryCreated = false;
+  let cleanupTemporary = false;
   await io.mkdir(dirname(target), { recursive: true });
   try {
-    await io.writeFile(temporary, `${JSON.stringify(snapshot, null, 2)}\n`, { encoding: "utf8", flag: "wx" });
-    temporaryCreated = true;
+    cleanupTemporary = true;
+    try {
+      await io.writeFile(temporary, serialized, { encoding: "utf8", flag: "wx" });
+    } catch (error) {
+      if (error?.code === "EEXIST") cleanupTemporary = false;
+      throw error;
+    }
     await io.rename(temporary, target);
-    temporaryCreated = false;
+    cleanupTemporary = false;
   } finally {
-    if (temporaryCreated) await io.rm(temporary, { force: true });
+    if (cleanupTemporary) await io.rm(temporary, { force: true });
   }
-  return snapshot;
+  return serializedSnapshot;
 }
 
 export async function refreshCatalog(options = {}) {

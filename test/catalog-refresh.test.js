@@ -107,6 +107,60 @@ test("atomic writer writes a sibling temporary file and renames it over the targ
   assert.equal(calls.some(([operation, path]) => operation === "writeFile" && path === "/tmp/catalog.json"), false);
 });
 
+test("atomic writer validates and writes one immutable serialized representation", async () => {
+  const snapshot = await buildCatalogSnapshot({
+    selections: [["owner/repo", "coding-agents"]],
+    categories,
+    productFamilies: [],
+    getJson: mockedGitHub(githubRepository()),
+    now: () => new Date(collectedAt),
+  });
+  const expected = `${JSON.stringify(snapshot, null, 2)}\n`;
+  let written;
+  const io = {
+    mkdir: async () => {
+      snapshot.tools[0].repositoryUrl = "javascript:alert(1)";
+    },
+    writeFile: async (_path, bytes) => { written = bytes; },
+    rename: async () => {},
+    rm: async () => {},
+  };
+
+  await writeCatalogSnapshotAtomically(snapshot, "/tmp/catalog.json", { io, nonce: () => "fixed" });
+
+  assert.equal(written, expected);
+  assert.deepEqual(JSON.parse(written).tools[0].repositoryUrl, "https://github.com/owner/repo");
+});
+
+test("atomic writer validates the plain JSON produced by custom toJSON exactly once", async () => {
+  const snapshot = await buildCatalogSnapshot({
+    selections: [["owner/repo", "coding-agents"]],
+    categories,
+    productFamilies: [],
+    getJson: mockedGitHub(githubRepository()),
+    now: () => new Date(collectedAt),
+  });
+  let serializationCount = 0;
+  snapshot.toJSON = () => {
+    serializationCount += 1;
+    return { ...snapshot, categories: undefined, toJSON: undefined };
+  };
+  const calls = [];
+  const io = {
+    mkdir: async (...args) => calls.push(["mkdir", ...args]),
+    writeFile: async (...args) => calls.push(["writeFile", ...args]),
+    rename: async (...args) => calls.push(["rename", ...args]),
+    rm: async (...args) => calls.push(["rm", ...args]),
+  };
+
+  await assert.rejects(
+    () => writeCatalogSnapshotAtomically(snapshot, "/tmp/catalog.json", { io, nonce: () => "fixed" }),
+    /categories must be an array/,
+  );
+  assert.equal(serializationCount, 1);
+  assert.deepEqual(calls, []);
+});
+
 test("atomic writer does not delete a sibling temporary file it failed to create", async () => {
   const snapshot = await buildCatalogSnapshot({
     selections: [["owner/repo", "coding-agents"]],
@@ -128,6 +182,37 @@ test("atomic writer does not delete a sibling temporary file it failed to create
     /exists/,
   );
   assert.equal(removed, false);
+});
+
+test("atomic writer removes a temporary file when writeFile creates it and then rejects", async () => {
+  const snapshot = await buildCatalogSnapshot({
+    selections: [["owner/repo", "coding-agents"]],
+    categories,
+    productFamilies: [],
+    getJson: mockedGitHub(githubRepository()),
+    now: () => new Date(collectedAt),
+  });
+  const directory = await mkdtemp(join(tmpdir(), "oh-my-feed-partial-write-"));
+  const destination = join(directory, "catalog.json");
+  const io = {
+    mkdir: async () => {},
+    writeFile: async (...args) => {
+      await writeFile(...args);
+      throw new Error("injected partial-write failure");
+    },
+    rename: async () => {},
+    rm,
+  };
+
+  try {
+    await assert.rejects(
+      () => writeCatalogSnapshotAtomically(snapshot, destination, { io, nonce: () => "partial" }),
+      /injected partial-write failure/,
+    );
+    assert.deepEqual(await readdir(directory), []);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test("mocked refresh preserves last known-good catalog on malformed and colliding GitHub output", async () => {

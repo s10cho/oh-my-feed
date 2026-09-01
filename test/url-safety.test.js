@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { safeHref } from "../public/url-safety.js";
 
@@ -31,15 +32,24 @@ test("safeHref applies the explicit host and path policy for each rendered URL u
   assert.equal(safeHref("https://github.com/owner", "constructor"), "#");
 });
 
-test("legacy feed article links are restricted to the configured official publishers", () => {
+test("GitHub repository rendering accepts the same leading-dot and leading-underscore names as canonicalization", () => {
+  assert.equal(safeHref("https://github.com/github/.github", "github.repository"), "https://github.com/github/.github");
+  assert.equal(safeHref("https://github.com/owner/_private", "github.repository"), "https://github.com/owner/_private");
+});
+
+test("generic external HTTPS article links preserve the sibling root sample without allowing active protocols", async () => {
   for (const url of [
     "https://openai.com/index/example",
     "https://github.blog/changelog/example",
     "https://blog.cloudflare.com/example/",
     "https://huggingface.co/blog/example",
   ]) {
-    assert.equal(safeHref(url, "feed.article"), url);
+    assert.equal(safeHref(url, "external.article"), url);
   }
-  assert.equal(safeHref("javascript:alert(1)", "feed.article"), "#");
-  assert.equal(safeHref("https://openai.com.evil.example/index/example", "feed.article"), "#");
+  const sample = JSON.parse(await readFile(new URL("../mock/demo-data.json", import.meta.url), "utf8"));
+  for (const { url } of sample.items) assert.equal(safeHref(url, "external.article"), url);
+
+  assert.equal(safeHref("javascript:alert(1)", "external.article"), "#");
+  assert.equal(safeHref("data:text/html,<script>alert(1)</script>", "external.article"), "#");
+  assert.equal(safeHref("http://example.com/article", "external.article"), "#");
 });

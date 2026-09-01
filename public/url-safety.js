@@ -1,6 +1,11 @@
-const repositorySegment = /^[a-z\d](?:[a-z\d._-]{0,98}[a-z\d])?$/i;
 const ownerSegment = /^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i;
 const loginSegment = /^[a-z\d](?:[a-z\d-]{0,38})$/i;
+const externalHttpsPolicy = (url) => Boolean(url.hostname);
+
+export function isValidGitHubRepositoryName(value) {
+  return typeof value === "string"
+    && /^(?!\.{1,2}$)[a-z\d._-]{1,100}$/i.test(value);
+}
 
 function pathSegments(url) {
   return url.pathname.split("/").filter(Boolean);
@@ -12,7 +17,7 @@ const urlPolicies = new Map([
     return url.hostname === "github.com"
       && pathSegments(url).length === 2
       && ownerSegment.test(owner ?? "")
-      && repositorySegment.test(repository ?? "")
+      && isValidGitHubRepositoryName(repository)
       && !url.search
       && !url.hash;
   }],
@@ -36,7 +41,7 @@ const urlPolicies = new Map([
       && kind === "repos"
       && pathSegments(url).length === 3
       && ownerSegment.test(owner ?? "")
-      && repositorySegment.test(repository ?? "")
+      && isValidGitHubRepositoryName(repository)
       && !url.search
       && !url.hash;
   }],
@@ -51,6 +56,9 @@ const urlPolicies = new Map([
   }],
   ["github.evidence", (url) =>
     url.hostname === "github.com" && pathSegments(url).length >= 2 && !url.search && !url.hash],
+  ["external.homepage", externalHttpsPolicy],
+  ["external.evidence", externalHttpsPolicy],
+  ["external.article", externalHttpsPolicy],
   ["geeknews.item", (url) =>
     url.hostname === "news.hada.io" && url.pathname === "/topic" && /^\?id=\d+$/.test(url.search) && !url.hash],
   ["hackernews.item", (url) =>
@@ -59,10 +67,6 @@ const urlPolicies = new Map([
     ["producthunt.com", "www.producthunt.com"].includes(url.hostname) && pathSegments(url).length > 0 && !url.hash],
   ["ohmyfeed.item", (url) =>
     ["ohmyfeed.stream", "discover.ohmyfeed.stream"].includes(url.hostname) && !url.hash],
-  ["feed.article", (url) =>
-    ["openai.com", "github.blog", "blog.cloudflare.com", "huggingface.co"].includes(url.hostname)
-      && pathSegments(url).length > 0
-      && !url.hash],
 ]);
 
 export function safeHref(value, usage) {

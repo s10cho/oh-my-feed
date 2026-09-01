@@ -19,6 +19,11 @@ test("canonicalizer derives a stable owner/repository identity from safe GitHub 
   );
 });
 
+test("canonicalizer accepts legitimate GitHub repository names beginning with dot or underscore", () => {
+  assert.equal(canonicalizeGitHubRepositoryUrl("https://github.com/github/.github").id, "github/.github");
+  assert.equal(canonicalizeGitHubRepositoryUrl("https://github.com/owner/_private").id, "owner/_private");
+});
+
 test("canonicalizer rejects non-GitHub, ambiguous, and non-repository GitHub URLs", () => {
   for (const value of [
     "http://github.com/owner/repo",
@@ -540,6 +545,18 @@ test("malformed collection entries return validation errors instead of throwing"
   }
 });
 
+test("malformed non-string maker logins return validation errors instead of throwing", () => {
+  for (const login of [123, {}, []]) {
+    const snapshot = createContractSnapshot();
+    snapshot.makers[0].login = login;
+    assert.doesNotThrow(() => validateCatalogSnapshot(snapshot));
+    assert.ok(
+      validateCatalogSnapshot(snapshot).some((error) => error.includes("makers[0].login")),
+      `expected malformed login ${JSON.stringify(login)} to be rejected`,
+    );
+  }
+});
+
 test("GitHub owner evidence must be the canonical URL of the related repository", () => {
   const invalidUrl = createContractSnapshot();
   invalidUrl.toolMakerRelations[0].evidenceUrl = "not-a-url";
@@ -566,6 +583,45 @@ test("schema validator rejects unsafe and spoofed URLs in every source-backed pa
     assert.ok(
       validateCatalogSnapshot(snapshot).some((error) => error.includes(path)),
       `expected unsafe ${path} to be rejected`,
+    );
+  }
+});
+
+test("tool homepages require an explicit safe external HTTPS URL or null", () => {
+  const valid = createContractSnapshot();
+  valid.tools[0].homepage = "https://example.com/tools/eli5?ref=catalog";
+  valid.tools[1].homepage = null;
+  assert.deepEqual(validateCatalogSnapshot(valid), []);
+
+  for (const homepage of ["javascript:alert(1)", "http://example.com/tool", "not-a-url", 42]) {
+    const snapshot = createContractSnapshot();
+    snapshot.tools[0].homepage = homepage;
+    assert.ok(
+      validateCatalogSnapshot(snapshot).some((error) => error.includes("tools[0].homepage")),
+      `expected unsafe homepage ${JSON.stringify(homepage)} to be rejected`,
+    );
+  }
+});
+
+test("every tool-maker relation evidence URL requires a safe GitHub or external HTTPS contract", () => {
+  const valid = createContractSnapshot();
+  valid.toolMakerRelations.push({
+    id: "editorial.maintainer:dreambigou/eli5:someone-else",
+    toolId: "dreambigou/eli5",
+    makerId: "someone-else",
+    kind: "maintainer",
+    sourceNamespace: "editorial",
+    evidenceUrl: "https://example.com/evidence/eli5",
+    observedAt: valid.collectedAt,
+  });
+  assert.deepEqual(validateCatalogSnapshot(valid), []);
+
+  for (const evidenceUrl of ["javascript:alert(1)", "http://example.com/evidence", "not-a-url", {}]) {
+    const snapshot = structuredClone(valid);
+    snapshot.toolMakerRelations.at(-1).evidenceUrl = evidenceUrl;
+    assert.ok(
+      validateCatalogSnapshot(snapshot).some((error) => error.includes("toolMakerRelations[2].evidenceUrl")),
+      `expected unsafe evidence URL ${JSON.stringify(evidenceUrl)} to be rejected`,
     );
   }
 });

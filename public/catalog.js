@@ -1,4 +1,4 @@
-import { isSafeUrl } from "./url-safety.js";
+import { isSafeUrl, isValidGitHubRepositoryName } from "./url-safety.js";
 
 const compareCodePoints = (left, right) => left < right ? -1 : left > right ? 1 : 0;
 
@@ -25,7 +25,6 @@ export function canonicalizeGitHubRepositoryUrl(repositoryUrl) {
   const [rawOwner, rawRepository] = segments;
   const repository = rawRepository?.replace(/\.git$/i, "");
   const safeOwner = /^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i;
-  const safeRepository = /^(?!\.{1,2}$)[a-z\d._-]{1,100}$/i;
   if (
     url.protocol !== "https:" ||
     url.hostname !== "github.com" ||
@@ -36,7 +35,7 @@ export function canonicalizeGitHubRepositoryUrl(repositoryUrl) {
     url.hash ||
     segments.length !== 2 ||
     !safeOwner.test(rawOwner ?? "") ||
-    !safeRepository.test(repository ?? "")
+    !isValidGitHubRepositoryName(repository)
   ) {
     throw new Error("Invalid GitHub repository URL");
   }
@@ -375,7 +374,8 @@ export function validateCatalogSnapshot(snapshot) {
       if (maker.sourceIdentifier !== `github:user:${maker.sourceId}`) {
         errors.push(`makers[${index}].sourceIdentifier must match sourceId`);
       }
-      if (maker.id !== maker.login?.toLowerCase()) {
+      const normalizedLogin = typeof maker.login === "string" ? maker.login.toLowerCase() : null;
+      if (maker.id !== normalizedLogin) {
         errors.push(`makers[${index}].id must equal lowercase login`);
       }
       if (!isSafeUrl(maker.avatarUrl, "github.avatar")) {
@@ -383,12 +383,12 @@ export function validateCatalogSnapshot(snapshot) {
       }
       if (!isSafeUrl(maker.profileUrl, "github.profile")) {
         errors.push(`makers[${index}].profileUrl must be a safe GitHub profile URL`);
-      } else if (new URL(maker.profileUrl).pathname.toLowerCase() !== `/${maker.login?.toLowerCase()}`) {
+      } else if (new URL(maker.profileUrl).pathname.toLowerCase() !== `/${normalizedLogin}`) {
         errors.push(`makers[${index}].profileUrl must match login`);
       }
       if (!isSafeUrl(maker.sourceUrl, "github.userApi")) {
         errors.push(`makers[${index}].sourceUrl must be a safe GitHub user API URL`);
-      } else if (new URL(maker.sourceUrl).pathname.toLowerCase() !== `/users/${maker.login?.toLowerCase()}`) {
+      } else if (new URL(maker.sourceUrl).pathname.toLowerCase() !== `/users/${normalizedLogin}`) {
         errors.push(`makers[${index}].sourceUrl must match login`);
       }
       if (Object.hasOwn(maker, "toolIds")) errors.push(`makers[${index}].toolIds must be absent in schema v2`);
@@ -445,6 +445,13 @@ export function validateCatalogSnapshot(snapshot) {
       if (!isIsoTimestamp(tool.createdAt)) {
         errors.push(`tools[${index}].createdAt must be an ISO timestamp`);
       }
+      if (
+        tool.homepage !== undefined
+        && tool.homepage !== null
+        && !isSafeUrl(tool.homepage, "external.homepage")
+      ) {
+        errors.push(`tools[${index}].homepage must be a safe external HTTPS URL or null`);
+      }
       for (const field of ["makerId", "stars", "forks", "sourceMentions", "clicks"]) {
         if (Object.hasOwn(tool, field)) errors.push(`tools[${index}].${field} must be absent in schema v2`);
       }
@@ -495,6 +502,10 @@ export function validateCatalogSnapshot(snapshot) {
       }
       if (relation.kind === "owner" && relation.evidenceUrl !== canonicalRepositoryByTool.get(relation.toolId)) {
         errors.push(`toolMakerRelations[${index}].evidenceUrl must match canonical tool repository URL`);
+      }
+      const evidenceUsage = relation.sourceNamespace === "github" ? "github.evidence" : "external.evidence";
+      if (!isSafeUrl(relation.evidenceUrl, evidenceUsage)) {
+        errors.push(`toolMakerRelations[${index}].evidenceUrl must be a safe GitHub or external HTTPS URL`);
       }
       if (!isCanonicalIsoTimestamp(relation.observedAt)) {
         errors.push(`toolMakerRelations[${index}].observedAt must be an ISO timestamp`);
