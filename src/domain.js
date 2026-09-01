@@ -15,7 +15,7 @@ export function visibleTodayItems(session) {
 
 export function visibleBrowseItems(session) {
   return session.items.filter(
-    (item) => item.humanState.visibility === "visible",
+    (item) => !item.browseExcluded && item.humanState.visibility === "visible",
   );
 }
 

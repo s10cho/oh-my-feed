@@ -9,12 +9,25 @@ import {
   visibleTodayItems,
 } from "./src/domain.js";
 
-const data = await fetch("./mock/demo-data.json").then((response) => {
-  if (!response.ok) throw new Error("샘플 데이터를 불러오지 못했습니다.");
-  return response.json();
-});
+const [data, liveFeed] = await Promise.all([
+  fetchJson("./mock/demo-data.json"),
+  fetchJson("./data/live-feed.json"),
+]);
 
-let session = createSession(data);
+const runtimeData = {
+  ...data,
+  items: [
+    ...liveFeed.items.map((item) => ({
+      ...item,
+      selectedForToday: false,
+      humanState: { readState: "unread", saved: false, visibility: "visible" },
+      agentState: { reviewState: "unseen" },
+    })),
+    ...data.items.map((item) => ({ ...item, browseExcluded: true })),
+  ],
+};
+
+let session = createSession(runtimeData);
 let mode = "browse";
 let selectedItemId = null;
 let toastTimer;
@@ -75,9 +88,9 @@ function renderMode() {
   elements.knowledgeSection.hidden = !personalized;
 
   if (personalized) {
-    elements.briefEyebrow.textContent = "2026.09.01 · PERSONALIZED";
+    elements.briefEyebrow.textContent = "PERSONALIZED · SAMPLE";
     elements.briefTitle.innerHTML = `${escapeHtml(data.project.name)}와 관련된<br />새 소식`;
-    elements.briefDescription.textContent = `${data.project.name}의 목표와 기술 구성을 기준으로 정리했습니다.`;
+    elements.briefDescription.textContent = `${data.project.name}의 목표와 기술 구성을 기준으로 한 개인화 방식 검토용 샘플입니다.`;
     elements.summaryPrimary.textContent = data.displayMetrics.newItemCount;
     elements.summaryPrimaryLabel.textContent = "새 글";
     elements.summaryArrow.textContent = "→";
@@ -86,15 +99,14 @@ function renderMode() {
     elements.queueEyebrow.textContent = "PERSONALIZED FEED";
     elements.queueTitle.textContent = "내 피드";
   } else {
-    const categories = new Set(visibleBrowseItems(session).map((item) => item.category));
-    elements.briefEyebrow.textContent = "2026.09.01 · LATEST";
+    elements.briefEyebrow.textContent = `${formatSnapshotTime(liveFeed.fetchedAt)} · LIVE SNAPSHOT`;
     elements.briefTitle.textContent = "새로 나온 소식";
-    elements.briefDescription.textContent = "AI·개발 분야의 새 글을 한곳에서 확인하세요.";
-    elements.summaryPrimary.textContent = data.displayMetrics.sourceCount;
-    elements.summaryPrimaryLabel.textContent = "등록 소스";
+    elements.briefDescription.textContent = "OpenAI, GitHub, Cloudflare, Hugging Face 공식 피드에서 가져왔습니다.";
+    elements.summaryPrimary.textContent = liveFeed.items.length;
+    elements.summaryPrimaryLabel.textContent = "최신 글";
     elements.summaryArrow.textContent = "·";
-    elements.summarySecondary.textContent = categories.size;
-    elements.summarySecondaryLabel.textContent = "카테고리";
+    elements.summarySecondary.textContent = liveFeed.sourceCount;
+    elements.summarySecondaryLabel.textContent = "공식 소스";
     elements.queueEyebrow.textContent = "LATEST FEED";
     elements.queueTitle.textContent = "새 글";
   }
@@ -130,7 +142,7 @@ function browseGroupsTemplate(items) {
 function browseItemTemplate(item) {
   return `<button class="feed-item" type="button" data-item-id="${item.id}" aria-current="${item.id === selectedItemId}">
     <span class="priority-bar" aria-hidden="true"></span>
-    <span><span class="feed-source">${escapeHtml(item.source)}</span><span class="feed-title">${escapeHtml(item.title)}</span></span>
+    <span><span class="feed-source">${escapeHtml(item.source)} · ${formatPublishedDate(item.publishedAt)}</span><span class="feed-title">${escapeHtml(item.title)}</span></span>
     ${stateRailTemplate(item)}
   </button>`;
 }
@@ -185,9 +197,9 @@ function detailHeaderTemplate(item, contextLabel) {
 function browseDetailTemplate(item) {
   return `<article class="detail-card">
     ${detailHeaderTemplate(item, item.category)}
-    <section class="story-summary" aria-labelledby="story-summary-title"><h3 id="story-summary-title">이 글에서 다루는 내용</h3><p>${escapeHtml(item.summary)}</p></section>
+    <section class="story-summary" aria-labelledby="story-summary-title"><h3 id="story-summary-title">RSS에서 제공한 설명</h3><p>${escapeHtml(item.summary || "이 피드는 설명을 제공하지 않습니다. 자세한 내용은 원문에서 확인하세요.")}</p></section>
     ${commonActionsTemplate(item, false)}
-    <div class="personalization-invite"><strong>내 관심사와 연결해 보고 싶다면</strong><p>내 피드에서 Orbit과 관련된 이유와 예상 영향을 확인할 수 있습니다.</p><button class="button primary" type="button" data-action="open-personalized">내 피드에서 보기</button></div>
+    <div class="personalization-invite"><strong>개인화는 다음 단계에서 연결합니다</strong><p>현재 내 피드는 동작 방식 검토용 샘플입니다. 실제 글의 관련도는 아직 계산하지 않습니다.</p><button class="button primary" type="button" data-action="open-personalized">샘플 내 피드 보기</button></div>
   </article>`;
 }
 
@@ -230,6 +242,7 @@ function bindDetailActions(item) {
   });
   elements.detailPanel.querySelector('[data-action="open-personalized"]')?.addEventListener("click", () => {
     mode = "personalized";
+    selectedItemId = null;
     render();
   });
   elements.detailPanel.querySelector('[data-action="link"]')?.addEventListener("click", () => {
@@ -277,7 +290,7 @@ elements.askForm.addEventListener("submit", (event) => {
 });
 
 elements.resetButton.addEventListener("click", () => {
-  session = createSession(data);
+  session = createSession(runtimeData);
   selectedItemId = null;
   elements.answer.hidden = true;
   showToast("피드 상태를 처음으로 돌렸습니다.");
@@ -293,6 +306,31 @@ function showToast(message) {
 
 function slug(value) {
   return [...value].map((character) => character.codePointAt(0).toString(16)).join("-");
+}
+
+function formatSnapshotTime(value) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Seoul",
+  }).format(new Date(value));
+}
+
+function formatPublishedDate(value) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Seoul",
+  }).format(new Date(value));
+}
+
+async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`${url} 데이터를 불러오지 못했습니다.`);
+  return response.json();
 }
 
 function escapeHtml(value) {

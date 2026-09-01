@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "fetchedAt": "2026-09-01T05:20:32.784Z",
+  "sourceCount": 4,
+  "sources": [
+    {
+      "id": "openai-news",
+      "name": "OpenAI News",
+      "feedUrl": "https://openai.com/news/rss.xml",
+      "itemCount": 4
+    },
+    {
+      "id": "github-changelog",
+      "name": "GitHub Changelog",
+      "feedUrl": "https://github.blog/changelog/feed/",
+      "itemCount": 4
+    },
+    {
+      "id": "cloudflare-blog",
+      "name": "Cloudflare Blog",
+      "feedUrl": "https://blog.cloudflare.com/rss/",
+      "itemCount": 4
+    },
+    {
+      "id": "hugging-face-blog",
+      "name": "Hugging Face Blog",
+      "feedUrl": "https://huggingface.co/blog/feed.xml",
+      "itemCount": 4
+    }
+  ],
+  "failedSources": [],
+  "items": [
+    {
+      "id": "live-3364a53e",
+      "sourceId": "cloudflare-blog",
+      "source": "Cloudflare Blog",
+      "category": "개발 가이드",
+      "title": "Introducing Adaptive Intelligence: Undermining the economics of every bot attack",
+      "summary": "Bot operators have historically had the economic advantage, bypassing static, deterministic detection rules with cheap proxies and retooling. Cloudflare's new Adaptive Intelligence engine flips this dynamic by autonomously learning from the meta-signals of live traffic and deploy",
+      "url": "https://blog.cloudflare.com/introducing-adaptive-intelligence/",
+      "publishedAt": "2026-08-31T12:59:00.000Z",
+      "collectedFrom": "https://blog.cloudflare.com/rss/"
+    },
+    {
+      "id": "live-174b9e76",
+      "sourceId": "github-changelog",
+      "source": "GitHub Changelog",
+      "category": "도구와 제품",
+      "title": "GitHub Copilot in VS Code, August 2026 releases",
+      "summary": "This changelog covers VS Code v1.132 through v1.135, shipped throughout August 2026. These releases make it easier to organize agent sessions, review changes, and navigate long conversations. Agent Host, the… The post GitHub Copilot in VS Code, August 2026 releases appeared first",
+      "url": "https://github.blog/changelog/2026-08-31-github-copilot-in-vs-code-august-2026-releases",
+      "publishedAt": "2026-08-31T08:39:54.000Z",
+      "collectedFrom": "https://github.blog/changelog/feed/"
+    },
+    {
+      "id": "live-7291eccb",
+      "sourceId": "openai-news",
+      "source": "OpenAI News",
+      "category": "공식 업데이트",
+      "title": "Polimill builds Japan's next-generation public AI infrastructure",
+      "summary": "Polimill uses OpenAI GPT models and Codex to help municipalities search and use administrative knowledge while accelerating development.",
+      "url": "https://openai.com/index/polimill",
+      "publishedAt": "2026-08-31T07:00:00.000Z",
+      "collectedFrom": "https://openai.com/news/rss.xml"
+    },
+    {
+      "id": "live-bb9f1760",
+      "sourceId": "openai-news",
+      "source": "OpenAI News",
+      "category": "공식 업데이트",
+      "title": "A milestone in expanding access to AI",
+      "summary": "ChatGPT Ads reaches $1 billion in annualized revenue run rate and expands globally, supporting broader access to AI through free and affordable options.",
+      "url": "https://openai.com/index/expanding-access-to-ai-with-chatgpt-ads",
+      "publishedAt": "2026-08-31T04:00:00.000Z",
+      "collectedFrom": "https://openai.com/news/rss.xml"
+    },
+    {
+      "id": "live-7664b258",
+      "sourceId": "github-changelog",
+      "source": "GitHub Changelog",
+      "category": "도구와 제품",
+      "title": "GitHub Copilot in Visual Studio — August update",
+      "summary": "August 2026 brought more control over how GitHub Copilot reasons, which models you use, how teams share specialized agents, and when you ask for a code review. Highlights Here’s what’s… The post GitHub Copilot in Visual Studio — August update appeared first on The GitHub Blog .",
+      "url": "https://github.blog/changelog/2026-08-28-github-copilot-in-visual-studio-august-update-2",
+      "publishedAt": "2026-08-28T20:24:20.000Z",
+      "collectedFrom": "https://github.blog/changelog/feed/"
+    },
+    {
+      "id": "live-eb83295a",
+      "sourceId": "github-changelog",
+      "source": "GitHub Changelog",
+      "category": "도구와 제품",
+      "title": "GitHub Copilot weekly releases — August 24",
+      "summary": "This week’s updates give you more control over how Copilot runs, from team sessions in Slack and Teams to customization across the app, CLI, and your IDE. GitHub Copilot in… The post GitHub Copilot weekly releases — August 24 appeared first on The GitHub Blog .",
+      "url": "https://github.blog/changelog/2026-08-28-github-copilot-weekly-releases-august-24",
+      "publishedAt": "2026-08-28T20:13:22.000Z",
+      "collectedFrom": "https://github.blog/changelog/feed/"
+    },
+    {
+      "id": "live-f6987a06",
+      "sourceId": "cloudflare-blog",
+      "source": "Cloudflare Blog",
+      "category": "개발 가이드",
+      "title": "BotBase for Operators: A clearer path to joining Cloudflare's directory of bots and agents",
+      "summary": "Bot operators now have a home in the Cloudflare dashboard to manage submissions. This update adds submission status tracking, submission editing, and a behavior model so operators can accurately declare how their bots use content.",
+      "url": "https://blog.cloudflare.com/botbase-for-operators/",
+      "publishedAt": "2026-08-28T12:59:44.000Z",
+      "collectedFrom": "https://blog.cloudflare.com/rss/"
+    },
+    {
+      "id": "live-51209b52",
+      "sourceId": "github-changelog",
+      "source": "GitHub Changelog",
+      "category": "도구와 제품",
+      "title": "Upcoming changes to GitHub Copilot policies and billing",
+      "summary": "To provide a strong, consistent Copilot experience, we’re making three separate, upcoming changes to Copilot policies and billing. Please review the upcoming updates to understand what may impact you. Reopening… The post Upcoming changes to GitHub Copilot policies and billing app",
+      "url": "https://github.blog/changelog/2026-08-28-upcoming-changes-to-github-copilot-policies-and-billing",
+      "publishedAt": "2026-08-28T11:37:19.000Z",
+      "collectedFrom": "https://github.blog/changelog/feed/"
+    },
+    {
+      "id": "live-3123ed19",
+      "sourceId": "openai-news",
+      "source": "OpenAI News",
+      "category": "공식 업데이트",
+      "title": "Our decision on Cursor following its acquisition by SpaceX",
+      "summary": "Our decision to wind down our contract providing OpenAI models to Cursor following its acquisition by SpaceX.",
+      "url": "https://openai.com/index/our-decision-on-cursor-following-its-acquisition-by-spacex",
+      "publishedAt": "2026-08-28T06:00:00.000Z",
+      "collectedFrom": "https://openai.com/news/rss.xml"
+    },
+    {
+      "id": "live-a58298ba",
+      "sourceId": "openai-news",
+      "source": "OpenAI News",
+      "category": "공식 업데이트",
+      "title": "Supporting Thailand’s next generation of AI startups",
+      "summary": "OpenAI and Thailand’s MHESI launch an eight-week accelerator helping 10 health, wellness, and education startups turn AI prototypes into trusted products.",
+      "url": "https://openai.com/index/supporting-next-generation-ai-startups-thailand",
+      "publishedAt": "2026-08-28T02:00:00.000Z",
+      "collectedFrom": "https://openai.com/news/rss.xml"
+    },
+    {
+      "id": "live-ab092db3",
+      "sourceId": "hugging-face-blog",
+      "source": "Hugging Face Blog",
+      "category": "연구와 논문",
+      "title": "The Open ASR Leaderboard Adds Its First Global South Language",
+      "summary": "",
+      "url": "https://huggingface.co/blog/open-asr-leaderboard-global-south",
+      "publishedAt": "2026-08-28T00:00:00.000Z",
+      "collectedFrom": "https://huggingface.co/blog/feed.xml"
+    },
+    {
+      "id": "live-edcec759",
+      "sourceId": "cloudflare-blog",
+      "source": "Cloudflare Blog",
+      "category": "개발 가이드",
+      "title": "How we saved 100 terabytes of memory by optimizing 1.1.1.1’s DNS cache",
+      "summary": "Five Rust-level memory optimizations to the DNS cache layout of Big Pineapple cut per-entry memory by 56%, freeing approximately 100 TB of memory across Cloudflare's fleet.",
+      "url": "https://blog.cloudflare.com/dns-cache-memory-optimization-1111/",
+      "publishedAt": "2026-08-27T17:02:35.000Z",
+      "collectedFrom": "https://blog.cloudflare.com/rss/"
+    },
+    {
+      "id": "live-8aafb09e",
+      "sourceId": "hugging-face-blog",
+      "source": "Hugging Face Blog",
+      "category": "연구와 논문",
+      "title": "Training and Finetuning Multi-Vector Embedding Models with Sentence Transformers",
+      "summary": "",
+      "url": "https://huggingface.co/blog/train-multi-vector-encoder",
+      "publishedAt": "2026-08-26T00:00:00.000Z",
+      "collectedFrom": "https://huggingface.co/blog/feed.xml"
+    },
+    {
+      "id": "live-bbeafc48",
+      "sourceId": "hugging-face-blog",
+      "source": "Hugging Face Blog",
+      "category": "연구와 논문",
+      "title": "Granite 4.2 LLMs: How They're Built",
+      "summary": "",
+      "url": "https://huggingface.co/blog/ibm-granite/granite-4-2",
+      "publishedAt": "2026-08-25T15:14:14.000Z",
+      "collectedFrom": "https://huggingface.co/blog/feed.xml"
+    },
+    {
+      "id": "live-780b3d6c",
+      "sourceId": "hugging-face-blog",
+      "source": "Hugging Face Blog",
+      "category": "연구와 논문",
+      "title": "Quantization-Aware Healing: a compressed, 4-bit model that outperforms its full-precision original",
+      "summary": "",
+      "url": "https://huggingface.co/blog/MultiverseComputingCAI/quantization-aware-healing",
+      "publishedAt": "2026-08-25T11:39:24.000Z",
+      "collectedFrom": "https://huggingface.co/blog/feed.xml"
+    },
+    {
+      "id": "live-6a2b2457",
+      "sourceId": "cloudflare-blog",
+      "source": "Cloudflare Blog",
+      "category": "개발 가이드",
+      "title": "The Cloudflare Blog — brought to you by EmDash",
+      "summary": "We migrated the Cloudflare Blog to EmDash to prove our stack at massive scale. Here is how we stress-tested performance, safely routed production traffic, and redesigned the frontend experience.",
+      "url": "https://blog.cloudflare.com/cloudflare-blog-uses-emdash/",
+      "publishedAt": "2026-08-24T19:00:00.000Z",
+      "collectedFrom": "https://blog.cloudflare.com/rss/"
+    }
+  ]
+}

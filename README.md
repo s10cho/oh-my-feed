@@ -21,23 +21,26 @@
 - [시스템 경계와 컴포넌트](docs/architecture/system-context.md)
 - [도메인과 상태 모델](docs/architecture/domain-model.md)
 - [API 경계](docs/architecture/api-boundary.md)
+- [실제 피드 스냅샷](docs/architecture/live-feed-snapshot.md)
 - [ADR-0001: 사람과 에이전트 상태 분리](docs/adr/0001-separate-human-agent-state.md)
 - [ADR-0002: 프로젝트 중심 피드](docs/adr/0002-project-aware-feed.md)
 
 ## 실행
 
-Node.js와 Python 3 외의 패키지는 필요하지 않습니다.
+Node.js와 Python 3 외의 패키지는 필요하지 않습니다. 처음 실행하거나 데이터를 갱신할 때 공식 피드를 가져옵니다.
 
 ```bash
+npm run refresh:feeds
 npm test
 npm start
 ```
 
 브라우저에서 `http://localhost:4173`을 열고 다음 흐름을 확인합니다.
 
-1. MCP authorization 항목 선택
-2. 프로젝트 관련 근거 확인
-3. 프로젝트 연결 및 `AI 지식으로 승인`
-4. 하단에서 “최근 Orbit 설계에 반영할 변화가 있어?” 질문
+1. `둘러보기`에서 공식 피드의 실제 최신 글과 원문 확인
+2. `내 피드`로 전환해 개인화 방식 샘플 확인
+3. MCP authorization 샘플의 프로젝트 관련 근거 확인
+4. 프로젝트 연결 및 `AI 지식으로 승인`
+5. 하단에서 “최근 Orbit 설계에 반영할 변화가 있어?” 질문
 
-실제 RSS 수집, 인증, LLM 연동, 벡터 검색, 배포는 아직 구현하지 않습니다. 샘플 데이터 6개로 하나의 vertical slice를 검증하고, go/no-go 기준을 통과한 뒤 기능별 구현 브랜치로 나눕니다.
+`둘러보기`는 OpenAI, GitHub, Cloudflare, Hugging Face의 실제 RSS/Atom 스냅샷을 사용합니다. `내 피드`의 관련도, 인증, LLM 연동, 벡터 검색, 배포는 아직 구현하지 않았으며 화면에 샘플임을 표시합니다.

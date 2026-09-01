@@ -1,6 +1,6 @@
 # Minimum MVP
 
-**Status:** Implemented on `spike/product-sampling`  
+**Status:** Implemented with live browse snapshot on `spike/product-sampling`
 **Defined:** 2026-09-01
 
 ## Outcome
@@ -13,7 +13,7 @@
 
 ## Included
 
-- 개인화 정보가 없는 `둘러보기`: 카테고리별 일반 피드, 관련도 표시 없음
+- 개인화 정보가 없는 `둘러보기`: 공식 RSS/Atom의 실제 최신 글, 카테고리별 일반 피드, 관련도 표시 없음
 - 프로젝트 맥락이 있는 `내 피드`: 관련 항목, 선정 근거, 맞춤 기준 표시
 - 247개 새 항목에서 오늘 볼 7개를 남겼다는 가치 메시지
 - 6개 fixture 중 Today 항목 3개 표시
@@ -27,7 +27,7 @@
 
 ## Excluded
 
-- 실제 RSS/Atom 수집
+- 상시 RSS/Atom 수집과 자동 스케줄링
 - 실제 LLM 및 relevance 평가
 - 사용자 로그인과 영속 저장
 - 자유 형식 RAG 검색
@@ -46,6 +46,7 @@
 | Today→연결→승인→질문 흐름이 동작한다 | 실제 브라우저 확인 |
 | 데스크톱과 390px 모바일에서 사용할 수 있다 | 실제 브라우저 확인 |
 | 개인화 전에는 일반 피드, 개인화 후에는 관련 피드가 표시된다 | domain 및 브라우저 확인 |
+| 실제 공식 피드에서 최신 글과 원문 URL을 가져온다 | 4개 소스, 16개 항목 수집 확인 |
 
 ## Exit condition
 
