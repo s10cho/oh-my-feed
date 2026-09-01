@@ -4,9 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "python3 -m http.server 4173",
+    "start": "npm run build:metadata && wrangler dev",
     "refresh:feeds": "node scripts/fetch-feeds.mjs",
-    "test": "node --test",
-    "check": "node --check app.js && node --check src/domain.js && node --check scripts/fetch-feeds.mjs && node --test"
+    "build:metadata": "node scripts/generate-build-metadata.mjs",
+    "test": "npm run build:metadata && node --test",
+    "check": "npm run build:metadata && node --check app.js && node --check src/domain.js && node --check src/worker.js && node --check scripts/fetch-feeds.mjs && node --check scripts/generate-build-metadata.mjs && node --test",
+    "build": "npm run build:metadata && wrangler deploy --dry-run",
+    "deploy:dry-run": "npm run build"
+  },
+  "devDependencies": {
+    "wrangler": "4.127.1"
   }
 }

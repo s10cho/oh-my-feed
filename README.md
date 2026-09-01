@@ -1,46 +1,65 @@
-# Oh My Feed
+# Oh My Feed Discover
 
-> 중요한 정보를 읽는 데서 끝내지 않고, 내 프로젝트와 AI에 연결하는 개인 정보 피드.
+## Deployed links and status
 
-이 저장소는 원티드 이벤트용 제품 방향을 검증하는 최소 MVP입니다. 실제 RSS와 LLM 대신 고정 샘플 데이터를 사용해 핵심 사용자 흐름을 끝까지 실행합니다.
+- Hub: https://ohmyfeed.stream (separate experiment hub, not deployed by this branch)
+- Discover: https://discover.ohmyfeed.stream (target custom domain for this branch)
+- Focus comparison: https://focus.ohmyfeed.stream (separate branch)
 
-1. 많은 새 항목 중 오늘 볼 것만 줄여 주는 경험이 즉시 이해되는가?
-2. 일반 요약보다 “왜 내 프로젝트에 중요한가”가 더 큰 가치를 주는가?
-3. 사람이 승인한 정보만 AI의 지식으로 넘기는 흐름이 신뢰를 만드는가?
-4. 사람과 에이전트의 처리 상태를 나누는 모델이 실제 사용에 필요한가?
+This branch implements M0 only: a public Discover Hello World page and a Worker `/healthz` endpoint. No deployment has been claimed or performed from this repository checkout. The deployment SHA is exposed only after Cloudflare Workers Builds runs `npm run build`.
 
-현재 브랜치의 범위와 검증 방법은 [제품 샘플링 계획](docs/spikes/product-sampling.md)에 정리되어 있습니다.
+## Problem and current experiment
 
-## 문서 안내
+Oh My Feed Discover will test whether people can quickly understand a service for finding AI tools and the people who make or maintain them. M0 is deliberately only the deployable walking skeleton. It does not contain a catalog, GitHub data, accounts, analytics, click tracking, D1, or product ranking claims.
 
-- [제품 비전](docs/product/product-vision.md)
-- [최소 MVP 정의와 달성 근거](docs/product/minimum-mvp.md)
-- [문제와 요구사항](docs/product/problem-definition.md)
-- [원티드 데모 시나리오](docs/product/wanted-demo-scenario.md)
-- [저장소 기준선](docs/architecture/repository-baseline.md)
-- [시스템 경계와 컴포넌트](docs/architecture/system-context.md)
-- [도메인과 상태 모델](docs/architecture/domain-model.md)
-- [API 경계](docs/architecture/api-boundary.md)
-- [실제 피드 스냅샷](docs/architecture/live-feed-snapshot.md)
-- [ADR-0001: 사람과 에이전트 상태 분리](docs/adr/0001-separate-human-agent-state.md)
-- [ADR-0002: 프로젝트 중심 피드](docs/adr/0002-project-aware-feed.md)
+## AI usage
 
-## 실행
+The product uses no AI at M0. It has no AI classification, AI-generated summaries, or automated recommendations. Future GitHub metadata display must remain rule-based unless a later milestone implements and documents a real AI feature.
 
-Node.js와 Python 3 외의 패키지는 필요하지 않습니다. 처음 실행하거나 데이터를 갱신할 때 공식 피드를 가져옵니다.
+AI development tools used for this branch:
+
+- Hermes Agent: implementation and local verification assistance.
+- GStack: development workflow guidance.
+
+## Local commands
+
+Requires Node 22 or later and npm.
 
 ```bash
-npm run refresh:feeds
+npm ci
 npm test
+npm run check
+npm run build
+npm run deploy:dry-run
 npm start
 ```
 
-브라우저에서 `http://localhost:4173`을 열고 다음 흐름을 확인합니다.
+`npm run build` generates `src/generated/build-metadata.js` from build-time values and bundles the Worker with Wrangler dry-run. The generated module is ignored by git. Locally it falls back to the current git branch and SHA when available, otherwise `local`; the timestamp is generated at build time.
 
-1. `둘러보기`에서 공식 피드의 실제 최신 글과 원문 확인
-2. `내 피드`로 전환해 개인화 방식 샘플 확인
-3. MCP authorization 샘플의 프로젝트 관련 근거 확인
-4. 프로젝트 연결 및 `AI 지식으로 승인`
-5. 하단에서 “최근 Orbit 설계에 반영할 변화가 있어?” 질문
+## Cloudflare Workers Builds setup
 
-`둘러보기`는 OpenAI, GitHub, Cloudflare, Hugging Face의 실제 RSS/Atom 스냅샷을 사용합니다. `내 피드`의 관련도, 인증, LLM 연동, 벡터 검색, 배포는 아직 구현하지 않았으며 화면에 샘플임을 표시합니다.
+1. Create or select the `oh-my-feed-discover` Worker in the `ohmyfeed.stream` Cloudflare account.
+2. Connect this repository and set the production branch to `spike/ai-tools-network`.
+3. Configure the build command as `npm run build`.
+4. Configure production deploy as `npx wrangler deploy` and non-production deploy as `npx wrangler versions upload`. Workers Builds uses the project-local Wrangler version from `package-lock.json`.
+5. Add `discover.ohmyfeed.stream` as the Worker Custom Domain. `wrangler.jsonc` declares that hostname for the `oh-my-feed-discover` Worker.
+6. Let Workers Builds inject `WORKERS_CI_COMMIT_SHA` and `WORKERS_CI_BRANCH` only during the build. They are compiled into the public health metadata module, never read as runtime secrets.
+
+GitHub Actions is quality-only. `.github/workflows/ci.yml` runs pinned actions, Node 22, `npm ci`, `npm test`, `npm run check`, `npm run build`, and `git diff --check`; it has no Cloudflare credentials or deploy step. Cloudflare Workers Builds owns preview and production deployment.
+
+## Smoke and read-back
+
+After Workers Builds deploys, verify the actual public deployment rather than only the build result:
+
+```bash
+curl --fail --silent --show-error https://discover.ohmyfeed.stream/healthz
+curl --fail --silent --show-error https://discover.ohmyfeed.stream/ | grep -F '<title>Oh My Feed Discover</title>'
+curl --fail --silent --show-error https://discover.ohmyfeed.stream/styles.css > /dev/null
+curl --fail --silent --show-error https://discover.ohmyfeed.stream/app.js > /dev/null
+```
+
+Confirm `/healthz` returns HTTP 200 and exactly public `variant`, `branch`, `commitSha`, and `buildTimestamp` fields. Compare `variant` to `variant_b_discover`, `branch` to the Workers Builds branch, and `commitSha` to the deployment source SHA. Do not treat this README as evidence that the custom domain is live.
+
+## Rollback
+
+In Cloudflare Dashboard, open `oh-my-feed-discover` → Deployments, select the last known-good Worker version, and roll it back. Then repeat the smoke/read-back commands above and confirm the returned `commitSha` is the expected prior source SHA. Do not use a GitHub Actions deploy workflow to roll back: Workers Builds is the deployment owner for this branch.
